@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import ssl
+from dataclasses import dataclass
+from datetime import datetime, timezone
 
 from quart import Response as QuartResponse
 from quart import render_template
@@ -18,9 +20,16 @@ from geminiportal.utils import describe_tls_cert
 _logger = logging.getLogger(__name__)
 
 
-class GeminiRequest(BaseRequest):
+@dataclass
+class DocumentMetadata:
+    author: str | None
+    publish_date: datetime | None
+    modification_date: datetime | None
+
+
+class ScrollRequest(BaseRequest):
     """
-    Encapsulates a gemini:// request.
+    Encapsulates a scroll:// request.
     """
 
     def create_ssl_context(self) -> ssl.SSLContext:
@@ -29,7 +38,26 @@ class GeminiRequest(BaseRequest):
         context.verify_mode = ssl.CERT_NONE
         return context
 
-    async def fetch(self) -> GeminiResponse:
+    def parse_date(self, line: bytes) -> datetime | None:
+        if date_str := line.decode("UTF-8").rstrip():
+            try:
+                return datetime.fromisoformat(date_str)
+            except ValueError:
+                # This is fixed in python 3.11
+                # https://github.com/python/cpython/issues/80010
+                if date_str.endswith("Z"):
+                    date_str = date_str[:-1]
+                    return datetime.fromisoformat(date_str).replace(tzinfo=timezone.utc)
+
+        return None
+
+    def parse_author(self, line: bytes) -> str | None:
+        if author := line.decode("UTF-8").rstrip():
+            return author
+
+        return None
+
+    async def fetch(self) -> ScrollResponse:
         context = self.create_ssl_context()
         tls_close_notify = CloseNotifyState(context)
 
@@ -40,19 +68,34 @@ class GeminiRequest(BaseRequest):
         tls_version = ssock.version()
         tls_cipher, _, _ = ssock.cipher()
 
-        data = self.url.get_gemini_request()
+        language_list = ["en"]
+        if self.options.lang and self.options.lang != "en":
+            language_list.insert(0, self.options.lang)
+
+        data = self.url.get_scroll_request(language_list)
         writer.write(data)
         await writer.drain()
 
         raw_header = await reader.readline()
         status, meta = self.parse_response_header(raw_header)
 
-        return GeminiResponse(
+        if status.startswith("2"):
+            document_meta = DocumentMetadata(
+                author=self.parse_author(await reader.readline()),
+                publish_date=self.parse_date(await reader.readline()),
+                modification_date=self.parse_date(await reader.readline()),
+            )
+
+        else:
+            document_meta = None
+
+        return ScrollResponse(
             request=self,
             reader=reader,
             writer=writer,
             status=status,
             meta=meta,
+            document_meta=document_meta,
             tls_cert=tls_cert,
             tls_version=tls_version,
             tls_cipher=tls_cipher,
@@ -60,11 +103,20 @@ class GeminiRequest(BaseRequest):
         )
 
 
-class GeminiResponse(BaseResponse):
+class ScrollResponse(BaseResponse):
     STATUS_CODES = {
         "10": "INPUT",
         "11": "SENSITIVE INPUT",
-        "20": "SUCCESS",
+        "20": "General Science, Knowledge, Documentation, News",
+        "21": "Philosophy, Psychology",
+        "22": "Religion, Theology, Scripture",
+        "23": "Social Sciences, Military",
+        "24": "Default, Unclassified",
+        "25": "Mathmatics, Natural Science",
+        "26": "Applied Science, Medicine, General Technology, Engineering",
+        "27": "Arts, Entertainment, Sport, Fitness",
+        "28": "Linguistics, Literature, Personal Blogs, Reviews",
+        "29": "Geography, History, Biography",
         "30": "REDIRECT - TEMPORARY",
         "31": "REDIRECT - PERMANENT",
         "40": "TEMPORARY FAILURE",
@@ -82,6 +134,8 @@ class GeminiResponse(BaseResponse):
         "62": "CERTIFICATE NOT VALID",
     }
 
+    document_meta: DocumentMetadata
+
     tls_cert: bytes
     tls_version: str
     tls_cipher: str
@@ -94,6 +148,7 @@ class GeminiResponse(BaseResponse):
         writer,
         status,
         meta,
+        document_meta,
         tls_cert,
         tls_version,
         tls_cipher,
@@ -104,6 +159,8 @@ class GeminiResponse(BaseResponse):
         self.writer = writer
         self.status = status
         self.meta = meta
+
+        self.document_meta = document_meta
 
         self.tls_cert = tls_cert
         self.tls_version = tls_version
@@ -119,15 +176,15 @@ class GeminiResponse(BaseResponse):
             self.mimetype = ""
             self.lang = None
 
-        self.proxy_response_builder = GeminiProxyResponseBuilder(self)
+        self.proxy_response_builder = ScrollProxyResponseBuilder(self)
 
     @property
     def tls_close_notify_received(self):
         return bool(self.tls_close_notify)
 
 
-class GeminiProxyResponseBuilder(BaseProxyResponseBuilder):
-    response: GeminiResponse
+class ScrollProxyResponseBuilder(BaseProxyResponseBuilder):
+    response: ScrollResponse
 
     async def build_proxy_response(self):
         if self.response.options.raw_crt:

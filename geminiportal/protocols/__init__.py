@@ -3,6 +3,7 @@ from geminiportal.protocols.finger import FingerRequest
 from geminiportal.protocols.gemini import GeminiRequest
 from geminiportal.protocols.gopher import GopherRequest
 from geminiportal.protocols.nex import NexRequest
+from geminiportal.protocols.scroll import ScrollRequest
 from geminiportal.protocols.spartan import SpartanRequest
 from geminiportal.protocols.text import TxtRequest
 from geminiportal.urls import URLReference
@@ -29,6 +30,8 @@ def build_proxy_request(url: URLReference, options: ProxyOptions | None = None) 
         request_class = GopherRequest
     elif url.scheme == "gophers":
         request_class = GopherRequest
+    elif url.scheme == "scroll":
+        request_class = ScrollRequest
     else:
         raise ValueError(f"Unsupported URL scheme: {url.scheme}")
 

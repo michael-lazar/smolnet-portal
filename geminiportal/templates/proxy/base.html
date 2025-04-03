@@ -26,6 +26,13 @@ font-size=%2290%22&gt;{{ favicon }}&lt;/text&gt;&lt;/svg&gt;">
 </div>
 
 <div class="content">
+{% if response and response.document_meta %}
+    <table class="document-meta-table">
+      <tr><th>Author</th><td>{{ response.document_meta.author or "-"}}</td></tr>
+      <tr><th>Publish Date</th><td>{{ response.document_meta.publish_date or "-"}}</td></tr>
+      <tr><th>Modification Date</th><td>{{ response.document_meta.modification_date or "-"}}</td></tr>
+    </table>
+{% endif %}
 {% block content %}{%- endblock %}
 {% if response %}
 {% set charset = (handler.charset if handler else "") or response.charset or "" %}

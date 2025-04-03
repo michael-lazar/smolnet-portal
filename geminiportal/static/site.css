@@ -1,69 +1,107 @@
 html {
     margin: 20px;
 }
+
 body {
     margin: auto;
     max-width: 800px;
     -webkit-text-size-adjust: 100%;
 }
+
 .response-table {
     border: 0;
     border-collapse: collapse;
     margin: 10px 20px;
 }
+
 .response-table th {
     min-width: 3em;
     text-align: left;
     padding-right: 10px;
 }
+
 .response-table td {
     min-width: 3em;
     padding: 5px;
 }
+
+.document-meta-table {
+    border: 1px solid black;
+    margin: 0;
+}
+
+.document-meta-table th {
+    min-width: 3em;
+    border: 1px solid black;
+    text-align: left;
+    padding: 5px;
+    font-weight: normal;
+    font-style: italic;
+}
+
+.document-meta-table td {
+    min-width: 3em;
+    padding: 5px;
+    border: 1px solid black;
+}
+
 div {
     margin-bottom: 0.6em;
 }
+
 img {
     max-width: 300px;
 }
+
 details {
     margin-top: 1em;
 }
+
 details:not([open]) summary {
 }
+
 details summary {
     font-style: italic;
 }
+
 .link-line {
     font-size: smaller;
 }
+
 .logo {
     text-decoration: none;
     margin-right: 6px;
     font-size: 0.8em;
 }
+
 .url-form {
     display: flex;
     align-items: baseline;
 }
+
 .url-input {
     flex-grow: 1;
     max-width: 60ch;
 }
+
 .url-submit {
     margin-left: 4px;
 }
+
 .link-line a {
     text-decoration: none;
     padding-right: 0.4em;
 }
+
 .header {
     margin-bottom: 1em;
 }
+
 .header-item {
     padding-right: 0.4em;
     text-decoration: underline;
 }
+
 .title {
     font-weight: bolder;
     color: #3f51b5;
@@ -72,106 +110,135 @@ details summary {
     text-decoration: none;
     padding-right: 0.4em;
 }
+
 .body {
 }
+
 .content {
     margin-top: 1em;
 }
+
 .pillars {
     margin: 0;
 }
+
 .inline-image {
     cursor: zoom-in;
 }
+
 .inline-image.selected {
     max-width: 90vw;
     max-height: initial;
     cursor: zoom-out;
 }
+
 .inline-save {
     margin-bottom: 1em;
 }
+
 .protocol-grid {
     display: flex;
     flex-wrap: wrap;
 }
+
 .protocol-grid > div {
     width: 50%;
 }
+
 .gemini {
     margin-top: 1em;
     margin-bottom: 1em;
 }
+
 .gemini > * {
     margin: 0;
 }
+
 .gemini > p {
     white-space: pre-wrap;
 }
+
 .gemini span {
     font-size: smaller;
 }
+
 .gemini > pre {
     border: solid black 1px;
     padding: 5px;
     max-width: fit-content;
     overflow-x: scroll;
 }
+
 .gemini a {
     line-height: 1.5em;
 }
+
 .gemini > blockquote {
     white-space: pre-wrap;
     font-style: italic;
     border-left: 1px solid;
     padding-left: 10px;
 }
+
 .gemini > h1 {
     font-size: 1.5em;
 }
+
 .gemini > h2 {
     font-size: 1.25em;
 }
+
 .gemini > h3 {
     font-size: 1.1em;
 }
+
 .gemini > ul {
     padding-left: 1em;
 }
+
 .gemini > figure {
     margin-bottom: 1em;
 }
+
 .gemini > .input-line {
     margin-top: 5px;
 }
+
 .gemini > .input-line .input-text {
     text-decoration: underline;
     font-size: medium;
 }
+
 .gemini > .input-line input {
     vertical-align: text-bottom;
 }
+
 .gemini > .input-line textarea {
     vertical-align: text-bottom;
 }
+
 .gopher {
     white-space: pre;
     font-family: monospace;
     border-spacing: 0;
 }
+
 .gopher table {
     border-collapse: collapse;
     border: 0;
     overflow: auto;
     margin: auto;
 }
+
 .gopher tr.selectable:hover {
     background: lightgray;
 }
+
 .gopher td {
     padding-right: 1em;
     border: 0;
 }
+
 .gopher td.type-description, td.mimetype {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -179,51 +246,65 @@ details summary {
     font-size: smaller;
     vertical-align: middle;
 }
+
 .gopher td.info-link.empty {
-   padding-right: 0;
+    padding-right: 0;
 }
+
 .gopher td.info-link a {
     text-decoration: none;
 }
+
 .gopher span {
     font-size: smaller;
 }
+
 .gopher td.link-icon > img {
     height: 1em;
     vertical-align: bottom;
 }
+
 .gopher td.query-form {
     white-space: normal;
     padding-top: 5px;
 }
+
 .gopher td.display a {
     white-space: normal;
 }
+
 .gopher td.query-form > form {
     display: inline-flex;
     align-items: center;
 }
+
 .gopher td.query-form > form > * {
     margin-right: 5px;
 }
+
 .gopher input::placeholder {
     white-space: pre;
     font-family: monospace;
 }
+
 .gopher .input-text {
     text-decoration: underline;
     font-size: medium;
 }
+
 .gopherp tr td:last-child {
     border-left: 1px solid black;
     padding-left: 10px;
 }
+
 .gopherp tr td.invisible {
     border-left: 0;
 }
+
 .nex span {
     font-size: smaller;
 }
+
 iframe {
     width: 100%;
     height: 800px;

@@ -11,6 +11,7 @@ from geminiportal.urls import URLReference
 
 class ProxyOptions(NamedTuple):
     charset: str | None = None
+    lang: str | None = None
     format: str | None = None
     raw: bool = False
     raw_crt: bool = False

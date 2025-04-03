@@ -1,0 +1,40 @@
+{% extends "proxy/base.html" %}
+
+{% block title %}
+  {% if title %}{{ title }}{% else %}{{ super() }}{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="gemini">
+{% for item in content -%}
+    {% if item.item_type == "h1" -%}
+        <h1 id="{{ item.anchor }}">{{ item.text }}</h1>
+    {% elif item.item_type == "h2" -%}
+        <h2 id="{{ item.anchor }}">{{ item.text }}</h2>
+    {% elif item.item_type == "h3" -%}
+        <h3 id="{{ item.anchor }}">{{ item.text }}</h3>
+    {% elif item.item_type == "link" -%}
+        {{ item.prefix }}<a href="{{ item.url }}">{{ item.text }}</a>{% if item.external_indicator %} <span>({{ item.external_indicator }})</span>{% endif %}<br/>
+    {% elif item.item_type == "pre" -%}
+        <pre>{{ "\n".join(item.lines) }}</pre>
+    {% elif item.item_type == "blockquote" -%}
+        <blockquote>{% for line in item.lines %}{{ line }}<br>{% endfor %}</blockquote>
+    {% elif item.item_type == "ul" -%}
+        <ul>
+        {% for line in item.lines %}<li>{{ line }}</li>
+        {% endfor %}</ul>
+    {% elif item.item_type == "p" -%}
+        <p>{% for line in item.lines %}{{ line }}<br>{% endfor %}</p>
+    {% elif item.item_type == "hr" -%}
+        <hr>
+    {% elif item.item_type == "prompt" -%}
+        <form method="get" action="{{ item.url }}" class="input-line">
+            <label>{{ item.prefix }}<span class="input-text">{{ item.text }}</span>
+                <textarea name="q" rows="1"></textarea>
+            </label>
+            <input type="submit" value="Upload">
+        </form>
+    {% endif %}
+{%- endfor %}
+</div>
+{% endblock %}

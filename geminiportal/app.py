@@ -190,6 +190,7 @@ async def proxy(
 
     options = ProxyOptions(
         charset=request.args.get("charset") or None,
+        lang=request.args.get("lang") or None,
         format=request.args.get("format") or None,
         raw=bool(request.args.get("raw")),
         raw_crt=bool(request.args.get("raw_crt")),

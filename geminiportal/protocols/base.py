@@ -4,6 +4,7 @@ import asyncio
 import logging
 import re
 import socket
+import ssl
 from asyncio.exceptions import IncompleteReadError
 from collections.abc import AsyncIterator
 
@@ -42,6 +43,7 @@ ALLOWED_PORTS = {
     3333,
     1900,
     *range(1960, 2021),
+    5699,
     *range(7000, 7100),
     8070,
 }
@@ -270,3 +272,25 @@ class BaseProxyResponseBuilder:
 
     async def build_proxy_response(self) -> QuartResponse | WerkzeugResponse:
         raise NotImplementedError
+
+
+class CloseNotifyState:
+    """
+    Inject into the SSL context to register if the TLS close_notify signal
+    was received at the end of the connection.
+    """
+
+    def __init__(self, context: ssl.SSLContext):
+        self.received: bool = False
+
+        def msg_callback(connection, direction, v, c, m, data):
+            if m == ssl._TLSAlertType.CLOSE_NOTIFY:  # type: ignore  # noqa
+                if direction == "read":
+                    _logger.info("CLOSE_NOTIFY received")
+                    self.received = True
+
+        # This is a private debugging hook provided by the SSL library
+        context._msg_callback = msg_callback  # type: ignore
+
+    def __bool__(self) -> bool:
+        return self.received
