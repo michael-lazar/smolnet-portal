@@ -72,7 +72,7 @@ class ScrollRequest(BaseRequest):
         if self.options.lang and self.options.lang != "en":
             language_list.insert(0, self.options.lang)
 
-        data = self.url.get_scroll_request(language_list)
+        data = self.url.get_scroll_request(self.options.meta, language_list)
         writer.write(data)
         await writer.drain()
 

@@ -284,7 +284,7 @@ class URLReference:
         url = urlunparse(parts)
         return f"{url}\r\n".encode()
 
-    def get_scroll_request(self, language_list: list[str]) -> bytes:
+    def get_scroll_request(self, meta: bool, language_list: list[str]) -> bytes:
         """
         Get the URL formatted to be sent to a scroll server.
         """
@@ -304,9 +304,10 @@ class URLReference:
         parts = (self.scheme, netloc, path, self.params, self.query, fragment)
         url = urlunparse(parts)
 
-        lang = ",".join(language_list)
+        lang_str = ",".join(language_list)
+        meta_str = "+" if meta else ""
 
-        return f"{url} {lang}\r\n".encode()
+        return f"{url} {meta_str}{lang_str}\r\n".encode()
 
     def get_gopher_request(self) -> bytes:
         """

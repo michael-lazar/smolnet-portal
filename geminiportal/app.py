@@ -68,6 +68,9 @@ def inject_context():
         ):
             kwargs["vr_url"] = g.url.get_proxy_url(vr=1)
 
+        if "response" in g and g.response.url.scheme == "scroll":
+            kwargs["meta_url"] = g.url.get_proxy_url(meta=1)
+
     elif "address" in g:
         kwargs["url"] = g.address
 
@@ -196,6 +199,7 @@ async def proxy(
         raw_crt=bool(request.args.get("raw_crt")),
         vr=bool(request.args.get("vr")),
         crt=bool(request.args.get("crt")),
+        meta=bool(request.args.get("meta")),
     )
 
     captcha_response = await check_captcha(options)

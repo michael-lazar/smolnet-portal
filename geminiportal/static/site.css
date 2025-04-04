@@ -25,26 +25,6 @@ body {
     padding: 5px;
 }
 
-.document-meta-table {
-    border: 1px solid black;
-    margin: 0;
-}
-
-.document-meta-table th {
-    min-width: 3em;
-    border: 1px solid black;
-    text-align: left;
-    padding: 5px;
-    font-weight: normal;
-    font-style: italic;
-}
-
-.document-meta-table td {
-    min-width: 3em;
-    padding: 5px;
-    border: 1px solid black;
-}
-
 div {
     margin-bottom: 0.6em;
 }

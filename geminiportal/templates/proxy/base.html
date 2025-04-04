@@ -20,19 +20,13 @@ font-size=%2290%22&gt;{{ favicon }}&lt;/text&gt;&lt;/svg&gt;">
 <div class="link-line">
     {% if root_url %}<a href="{{ root_url }}">[root]</a>{% endif %}
     {% if parent_url %}<a href="{{ parent_url }}">[parent]</a>{% endif %}
-{#    {% if vr_url %}<a href="{{ vr_url }}">[GopherVR]</a>{% endif %}#}
     {% if cert_url %}<a href="{{ cert_url }}">[cert]</a>{% endif %}
     {% if raw_url %}<a href="{{ raw_url }}">[raw&nbsp;file]</a>{% endif %}
+    {% if meta_url %}<a href="{{ meta_url }}">[meta]</a>{% endif %}
+    {% if vr_url %}<a href="{{ vr_url }}">[GopherVR]</a>{% endif %}
 </div>
 
 <div class="content">
-{% if response and response.document_meta %}
-    <table class="document-meta-table">
-      <tr><th>Author</th><td>{{ response.document_meta.author or "-"}}</td></tr>
-      <tr><th>Publish Date</th><td>{{ response.document_meta.publish_date or "-"}}</td></tr>
-      <tr><th>Modification Date</th><td>{{ response.document_meta.modification_date or "-"}}</td></tr>
-    </table>
-{% endif %}
 {% block content %}{%- endblock %}
 {% if response %}
 {% set charset = (handler.charset if handler else "") or response.charset or "" %}
@@ -45,6 +39,11 @@ font-size=%2290%22&gt;{{ favicon }}&lt;/text&gt;&lt;/svg&gt;">
     <tr><th>Original&nbsp;URL</th><td><a href="{{ response.url }}">{{ response.url.get_url()|truncate(60, True) }}</a></td></tr>
     {% if response.status %}<tr><th>Status Code</th><td>{{ response.status_display }}</td></tr>{% endif %}
     {% if response.mimetype %}<tr><th>Content-Type</th><td>{{ response.mimetype }}{% if charset %}; charset={{ charset.lower() }}{% endif %}{% if response.lang %}; lang={{ response.lang }}{% endif %}</td></tr>{% endif %}
+    {% if response.document_meta %}
+      <tr><th>Author</th><td>{{ response.document_meta.author or "-"}}</td></tr>
+      <tr><th>Publish Date</th><td>{{ response.document_meta.publish_date or "-"}}</td></tr>
+      <tr><th>Modification Date</th><td>{{ response.document_meta.modification_date or "-"}}</td></tr>
+    {% endif %}
   </table>
 </details>
 {% endif %}
