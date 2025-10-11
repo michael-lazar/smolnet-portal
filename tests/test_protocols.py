@@ -10,6 +10,7 @@ from geminiportal.protocols import (
     build_proxy_request,
 )
 from geminiportal.urls import URLReference
+from geminiportal.utils import ProxyOptions
 
 
 def test_build_proxy_request_gemini():
@@ -81,7 +82,7 @@ def test_build_proxy_request_blocked_port():
 @pytest.mark.integration
 async def test_gemini_request():
     url = URLReference("gemini://mozz.us")
-    request = GeminiRequest(url)
+    request = build_proxy_request(url)
     response = await request.get_response()
     assert await response.get_body()
 
@@ -135,5 +136,21 @@ async def test_gopher_request():
 async def test_gopher_plus_request():
     url = URLReference("gopher://mozz.us:7070/%09%09!")
     request = build_proxy_request(url)
+    response = await request.get_response()
+    assert await response.get_body()
+
+
+@pytest.mark.integration
+async def test_scroll_request():
+    url = URLReference("scroll://scrollprotocol.us.to")
+    request = build_proxy_request(url)
+    response = await request.get_response()
+    assert await response.get_body()
+
+
+@pytest.mark.integration
+async def test_scroll_request_meta():
+    url = URLReference("scroll://scrollprotocol.us.to")
+    request = build_proxy_request(url, options=ProxyOptions(meta=True))
     response = await request.get_response()
     assert await response.get_body()

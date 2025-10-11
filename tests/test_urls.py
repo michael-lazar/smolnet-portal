@@ -297,3 +297,15 @@ def test_get_gopher_request_plus_search():
 def test_get_gopher_request_plus_ask():
     url = URLReference("gopher://mozz.us/0selector%09%09?")
     assert url.get_gopher_request() == b"selector\t!\r\n"
+
+
+def test_get_scroll_request():
+    url = URLReference("scroll://scrollprotocol.us.to/spec.scroll")
+    request = url.get_scroll_request(meta=False, language_list=["en"])
+    assert request == b"scroll://scrollprotocol.us.to/spec.scroll en\r\n"
+
+
+def test_get_scroll_request_meta():
+    url = URLReference("scroll://scrollprotocol.us.to/spec.scroll")
+    request = url.get_scroll_request(meta=True, language_list=["en", "es"])
+    assert request == b"scroll://scrollprotocol.us.to/spec.scroll +en,es\r\n"

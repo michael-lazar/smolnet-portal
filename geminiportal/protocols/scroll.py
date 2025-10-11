@@ -39,7 +39,7 @@ class ScrollRequest(BaseRequest):
         return context
 
     def parse_date(self, line: bytes) -> datetime | None:
-        if date_str := line.decode("UTF-8").rstrip():
+        if date_str := line.decode("utf-8").rstrip():
             try:
                 return datetime.fromisoformat(date_str)
             except ValueError:
@@ -52,7 +52,7 @@ class ScrollRequest(BaseRequest):
         return None
 
     def parse_author(self, line: bytes) -> str | None:
-        if author := line.decode("UTF-8").rstrip():
+        if author := line.decode("utf-8").rstrip():
             return author
 
         return None
@@ -166,6 +166,8 @@ class ScrollResponse(BaseResponse):
         self.tls_version = tls_version
         self.tls_cipher = tls_cipher
         self.tls_close_notify = tls_close_notify
+
+        # TODO: If it's a meta request, the mimetype should always be text/scroll
 
         if self.status.startswith("2"):
             self.mimetype, params = self.parse_meta(meta)
