@@ -3,6 +3,8 @@ from collections import Counter
 from collections.abc import Iterable
 from typing import Any
 
+from markupsafe import Markup, escape
+
 from geminiportal.handlers.base import TemplateHandler
 from geminiportal.utils import parse_link_line, split_emoji
 
@@ -84,6 +86,17 @@ class ScrollHandler(TemplateHandler):
                     "external_indicator": url.get_external_indicator(),
                 }
 
+            elif line.startswith("#####"):
+                yield from self.flush()
+                text = line[5:].lstrip()
+                yield {"item_type": "h5", "text": text}
+
+            elif line.startswith("####"):
+                yield from self.flush()
+                text = line[4:].lstrip()
+                anchor = self.get_anchor(text)
+                yield {"item_type": "h4", "text": text, "anchor": anchor}
+
             elif line.startswith("###"):
                 yield from self.flush()
                 text = line[3:].lstrip()
@@ -123,10 +136,25 @@ class ScrollHandler(TemplateHandler):
     def flush(self, new_type: str | None = None) -> Iterable[dict]:
         if self.active_type != new_type:
             if self.line_buffer and self.active_type:
+                if self.active_type in ("p", "ul", "blockquote"):
+                    lines = [self.parse_inline_markup(line) for line in self.line_buffer]
+                else:
+                    lines = self.line_buffer
+
                 yield {
                     "item_type": self.active_type,
-                    "lines": self.line_buffer,
+                    "lines": lines,
                 }
 
             self.line_buffer = []
             self.active_type = new_type
+
+    def parse_inline_markup(self, text: str) -> str:
+        """
+        Simple parser that converts inline markup into sanitized HTML tags.
+        """
+        text = str(escape(text))
+        text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
+        text = re.sub(r"\*([^*]+)\*", r"<b>\1</b>", text)
+        text = re.sub(r"_([^_]+)_", r"<i>\1</i>", text)
+        return Markup(text)

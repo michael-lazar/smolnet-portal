@@ -149,6 +149,11 @@ details summary {
     overflow-x: scroll;
 }
 
+.gemini code {
+    border: solid black 1px;
+    padding: 1px 2px;
+}
+
 .gemini a {
     line-height: 1.5em;
 }

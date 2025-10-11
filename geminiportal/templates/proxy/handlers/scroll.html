@@ -13,6 +13,10 @@
         <h2 id="{{ item.anchor }}">{{ item.text }}</h2>
     {% elif item.item_type == "h3" -%}
         <h3 id="{{ item.anchor }}">{{ item.text }}</h3>
+    {% elif item.item_type == "h4" -%}
+        <h4 id="{{ item.anchor }}">{{ item.text }}</h4>
+    {% elif item.item_type == "h5" -%}
+        <h5>{{ item.text }}</h5>
     {% elif item.item_type == "link" -%}
         {{ item.prefix }}<a href="{{ item.url }}">{{ item.text }}</a>{% if item.external_indicator %} <span>({{ item.external_indicator }})</span>{% endif %}<br/>
     {% elif item.item_type == "pre" -%}

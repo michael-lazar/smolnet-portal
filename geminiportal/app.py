@@ -57,6 +57,7 @@ def inject_context():
 
     if "url" in g:
         kwargs["url"] = g.url.get_url()
+        kwargs["proxy_url"] = g.url.get_proxy_url()
         kwargs["root_url"] = g.url.get_root_proxy_url()
         kwargs["parent_url"] = g.url.get_parent_proxy_url() or kwargs["root_url"]
         kwargs["raw_url"] = g.url.get_proxy_url(raw=1)
