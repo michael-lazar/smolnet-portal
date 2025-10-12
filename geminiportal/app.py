@@ -57,6 +57,7 @@ def inject_context():
 
     if "url" in g:
         kwargs["url"] = g.url.get_url()
+        kwargs["proxy_url"] = g.url.get_proxy_url()
         kwargs["root_url"] = g.url.get_root_proxy_url()
         kwargs["parent_url"] = g.url.get_parent_proxy_url() or kwargs["root_url"]
         kwargs["raw_url"] = g.url.get_proxy_url(raw=1)
@@ -67,6 +68,9 @@ def inject_context():
             "application/gopher-attributes",
         ):
             kwargs["vr_url"] = g.url.get_proxy_url(vr=1)
+
+        if "response" in g and g.response.url.scheme == "scroll":
+            kwargs["meta_url"] = g.url.get_proxy_url(meta=1)
 
     elif "address" in g:
         kwargs["url"] = g.address
@@ -190,11 +194,13 @@ async def proxy(
 
     options = ProxyOptions(
         charset=request.args.get("charset") or None,
+        lang=request.args.get("lang") or None,
         format=request.args.get("format") or None,
         raw=bool(request.args.get("raw")),
         raw_crt=bool(request.args.get("raw_crt")),
         vr=bool(request.args.get("vr")),
         crt=bool(request.args.get("crt")),
+        meta=bool(request.args.get("meta")),
     )
 
     captcha_response = await check_captcha(options)

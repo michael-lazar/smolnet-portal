@@ -11,11 +11,13 @@ from geminiportal.urls import URLReference
 
 class ProxyOptions(NamedTuple):
     charset: str | None = None
+    lang: str | None = None
     format: str | None = None
     raw: bool = False
     raw_crt: bool = False
     vr: bool = False
     crt: bool = False
+    meta: bool = False
 
 
 async def describe_tls_cert(tls_cert: bytes) -> str:

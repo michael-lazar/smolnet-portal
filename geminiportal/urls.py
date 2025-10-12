@@ -14,6 +14,7 @@ mimetypes.add_type("text/gemini", ".gmi")
 mimetypes.add_type("text/gemini", ".gemini")
 mimetypes.add_type("text/x-rst", ".rst")
 mimetypes.add_type("application/gopher-menu", ".goph")
+mimetypes.add_type("text/scroll", ".scroll")
 
 PROXY_SCHEMES = [
     "gemini",
@@ -23,6 +24,7 @@ PROXY_SCHEMES = [
     "nex",
     "gopher",
     "gophers",
+    "scroll",
 ]
 
 
@@ -60,6 +62,7 @@ class URLReference:
         "text": 1961,
         "finger": 79,
         "nex": 1900,
+        "scroll": 5699,
     }
 
     def __init__(self, url: str, base: str | None = None):
@@ -280,6 +283,31 @@ class URLReference:
         parts = (self.scheme, netloc, path, self.params, self.query, fragment)
         url = urlunparse(parts)
         return f"{url}\r\n".encode()
+
+    def get_scroll_request(self, meta: bool, language_list: list[str]) -> bytes:
+        """
+        Get the URL formatted to be sent to a scroll server.
+        """
+        path = self.path
+        if path == "":
+            # Add an optional trailing slash for gemini because of a quirk in
+            # many server implementations that will redirect if the slash is
+            # missing from the root URL.
+            path = "/"
+
+        # Drop the fragment from the request sent to the server
+        fragment = ""
+
+        # Convert domain names to punycode for compatibility with URLs that
+        # contain encoded IDNs (follows RFC 3490).
+        netloc = self.netloc.encode("idna").decode("ascii")
+        parts = (self.scheme, netloc, path, self.params, self.query, fragment)
+        url = urlunparse(parts)
+
+        lang_str = ",".join(language_list)
+        meta_str = "+" if meta else ""
+
+        return f"{url} {meta_str}{lang_str}\r\n".encode()
 
     def get_gopher_request(self) -> bytes:
         """
