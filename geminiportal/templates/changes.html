@@ -2,21 +2,27 @@
 
 {% block body %}
   <h2>Changes</h2>
-  <h3>Staging</h3>
+  <h3>Unreleased</h3>
+  <h4>Scroll</h4>
   <p>
     Added initial support for the <a href="/scroll/scrollprotocol.us.to/spec.scroll">scroll://</a>
     protocol 🎉.
   </p>
   <ul>
     <li>
-      For <i>scroll://</i> requests, you can specify your desired response language by adding a
-      <i>?lang=&lt;code&gt;</i> query parameter to the proxy URL. For example,
-      <a href="/scroll/scrollprotocol.us.to/?lang=es">/scroll/scrollprotocol.us.to/?lang=es</a>.
+      You can specify your desired response language by adding a <i>?lang=&lt;code&gt;</i> query parameter.
+      <ul>
+        <li>For example, <a href="/scroll/scrollprotocol.us.to/?lang=es">/scroll/scrollprotocol.us.to/?lang=es</a>.</li>
+      </ul>
     <li>
-      For <i>scroll://</i> requests, there's a new
-      <a href="/scroll/scrollprotocol.us.to/?meta=1">[meta]</a> link at the top of the
-      page that will fetch the metadata for the current document.
+      There's a new <a href="/scroll/scrollprotocol.us.to/?meta=1">[meta]</a> link at the top of
+      the page that will make a metadata request for the current document.
     </li>
+  </ul>
+  <h4>Other Changes</h4>
+  <ul>
+    <li>Added a <a href="/gemini/mozz.us/">[refresh]</a> link at the top the page to reload the current URL.</li>
+    <li>Headers in gemini/spartan/scroll responses are now page anchors with clickable links.</li>
   </ul>
   <h3>2025-09-07</h3>
   <ul>
