@@ -25,6 +25,7 @@ class ScrollHandler(TemplateHandler):
     line_buffer: list[str]
     active_type: str | None
     anchor_counters: dict[AnchorLevel, int]
+    citation: dict | None
 
     def bump_h2_anchor(self):
         self.anchor_counters[AnchorLevel.H2] += 1
@@ -95,6 +96,7 @@ class ScrollHandler(TemplateHandler):
             AnchorLevel.H3: 0,
             AnchorLevel.H4: 0,
         }
+        self.citation = None
 
         for line in self.text.splitlines():
             line = line.rstrip()
@@ -108,16 +110,27 @@ class ScrollHandler(TemplateHandler):
                 self.line_buffer.append(line)
 
             elif line.startswith("=>"):
-                # TODO: add citation for quote
-                yield from self.flush()
                 url, link_text, prefix = parse_link_line(line[2:], self.url)
-                yield {
-                    "item_type": "link",
-                    "url": url.get_proxy_url(),
-                    "text": link_text,
-                    "prefix": prefix,
-                    "external_indicator": url.get_external_indicator(),
-                }
+
+                if self.active_type == "blockquote":
+                    # Treat it as a citation
+                    self.citation = {
+                        "url": url.get_proxy_url(),
+                        "text": link_text,
+                        "prefix": prefix or "— ",
+                        "external_indicator": url.get_external_indicator(),
+                    }
+                    yield from self.flush()
+                else:
+                    # Treat it as a normal link
+                    yield from self.flush()
+                    yield {
+                        "item_type": "link",
+                        "url": url.get_proxy_url(),
+                        "text": link_text,
+                        "prefix": prefix,
+                        "external_indicator": url.get_external_indicator(),
+                    }
 
             elif line.startswith("=:"):
                 yield from self.flush()
@@ -200,17 +213,19 @@ class ScrollHandler(TemplateHandler):
 
                 yield {
                     "item_type": self.active_type,
+                    "citation": self.citation,
                     "lines": lines,
                 }
 
             self.line_buffer = []
+            self.citation = None
             self.active_type = new_type
 
     def parse_inline_markup(self, text: str) -> str:
         """
         Simple parser that converts inline markup into sanitized HTML tags.
         """
-        # TODO: it's kinda broken, see test file
+        # TODO: it's kinda broken
         text = str(escape(text))
         text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
         text = re.sub(r"\*([^*]+)\*", r"<b>\1</b>", text)

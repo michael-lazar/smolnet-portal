@@ -22,7 +22,7 @@
     {% elif item.item_type == "pre" -%}
         <pre>{{ "\n".join(item.lines) }}</pre>
     {% elif item.item_type == "blockquote" -%}
-        <blockquote>{% for line in item.lines %}{{ line }}<br>{% endfor %}</blockquote>
+        <blockquote{% if item.citation %} cite="{{ item.citation.url }}"{% endif %}>{% for line in item.lines %}{{ line }}<br>{% endfor %}{% if item.citation %}<cite>{{ item.citation.prefix }}<a href="{{ item.citation.url }}">{{ item.citation.text }}</a>{% if item.citation.external_indicator %} <span>({{ item.citation.external_indicator }})</span>{% endif %}</cite><br>{% endif %}</blockquote>
     {% elif item.item_type == "ul" -%}
         <ul>
         {% for line in item.lines %}<li>{{ line }}</li>
