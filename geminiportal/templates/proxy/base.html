@@ -37,14 +37,14 @@ font-size=%2290%22&gt;{{ favicon }}&lt;/text&gt;&lt;/svg&gt;">
     {% if response.mimetype %}{{ response.mimetype }}{% endif %}
   </summary>
   <table class="response-table">
+    {% if response.document_meta %}
+      <tr><th>Author</th><td>{{ response.document_meta.author or "-"}}</td></tr>
+      <tr><th>Publish Date</th><td>{% if response.document_meta.publish_date %}<span title="{{ response.document_meta.publish_date }}">{{ response.document_meta.publish_date.strftime('%B %d, %Y') }}</span>{% else %}-{% endif %}</td></tr>
+      <tr><th>Modification Date</th><td>{% if response.document_meta.modification_date %}<span title="{{ response.document_meta.modification_date }}">{{ response.document_meta.modification_date.strftime('%B %d, %Y') }}</span>{% else %}-{% endif %}</td></tr>
+    {% endif %}
     <tr><th>Original&nbsp;URL</th><td><a href="{{ response.url }}">{{ response.url.get_url()|truncate(60, True) }}</a></td></tr>
     {% if response.status %}<tr><th>Status Code</th><td>{{ response.status_display }}</td></tr>{% endif %}
     {% if response.mimetype %}<tr><th>Content-Type</th><td>{{ response.mimetype }}{% if charset %}; charset={{ charset.lower() }}{% endif %}{% if response.lang %}; lang={{ response.lang }}{% endif %}</td></tr>{% endif %}
-    {% if response.document_meta %}
-      <tr><th>Author</th><td>{{ response.document_meta.author or "-"}}</td></tr>
-      <tr><th>Publish Date</th><td>{{ response.document_meta.publish_date or "-"}}</td></tr>
-      <tr><th>Modification Date</th><td>{{ response.document_meta.modification_date or "-"}}</td></tr>
-    {% endif %}
   </table>
 </details>
 {% endif %}

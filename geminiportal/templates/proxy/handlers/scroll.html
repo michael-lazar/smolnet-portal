@@ -6,6 +6,9 @@
 
 {% block content %}
 <div class="gemini">
+{% if is_metadata -%}
+  <i>Abstract</i><br><br>
+{% endif %}
 {% for item in content -%}
     {% if item.item_type == "h1" -%}
         <h1>{{ item.text }}</h1>

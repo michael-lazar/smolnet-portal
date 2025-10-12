@@ -240,3 +240,29 @@ class ScrollHandler(TemplateHandler):
         text = self.INLINE_ITALIC_PATTERN.sub(r"<i>\1</i>", text)
 
         return Markup(text)
+
+
+class ScrollMetadataHandler(ScrollHandler):
+    """
+    Renders a response to a scroll:// metadata request.
+
+    The content is formatted as text/scroll, but it allows us to tweak the
+    template to indicate that it's an "abstract" instead of a normal document.
+    """
+
+    @classmethod
+    async def from_response(cls, response) -> TemplateHandler:
+        # The metadata responses should always be rendered text/scroll,
+        # the mimetype in the response refers the the document itself
+        # instead of the metadata.
+        return cls(
+            response.url,
+            await response.get_body(),
+            mimetype="text/scroll",
+            charset="utf-8",
+        )
+
+    def get_context(self) -> dict[str, Any]:
+        context = super().get_context()
+        context["is_metadata"] = True
+        return context
