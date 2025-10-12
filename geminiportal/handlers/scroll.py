@@ -22,6 +22,13 @@ class ScrollHandler(TemplateHandler):
 
     template = "proxy/handlers/scroll.html"
 
+    # Code: `test` - must have non-whitespace adjacent
+    INLINE_CODE_PATTERN = re.compile(r"`(\S(?:[^`]*\S)?)`")
+    # Bold: *text* - must have non-whitespace adjacent and not match **
+    INLINE_BOLD_PATTERN = re.compile(r"(?<!\*)\*(\S(?:[^*]*\S)?)\*(?!\*)")
+    # Italic: _text_ - must have non-whitespace adjacent and not match __
+    INLINE_ITALIC_PATTERN = re.compile(r"(?<!_)_(\S(?:[^_]*\S)?)_(?!_)")
+
     line_buffer: list[str]
     active_type: str | None
     anchor_counters: dict[AnchorLevel, int]
@@ -223,11 +230,13 @@ class ScrollHandler(TemplateHandler):
 
     def parse_inline_markup(self, text: str) -> str:
         """
-        Simple parser that converts inline markup into sanitized HTML tags.
+        Parser that converts inline markup into sanitized HTML tags.
         """
-        # TODO: it's kinda broken
+        # Escape the HTML first
         text = str(escape(text))
-        text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
-        text = re.sub(r"\*([^*]+)\*", r"<b>\1</b>", text)
-        text = re.sub(r"_([^_]+)_", r"<i>\1</i>", text)
+
+        text = self.INLINE_CODE_PATTERN.sub(r"<code>\1</code>", text)
+        text = self.INLINE_BOLD_PATTERN.sub(r"<b>\1</b>", text)
+        text = self.INLINE_ITALIC_PATTERN.sub(r"<i>\1</i>", text)
+
         return Markup(text)
