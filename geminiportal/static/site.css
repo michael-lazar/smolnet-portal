@@ -167,15 +167,16 @@ details summary {
 }
 
 .gemini > pre {
-    border: solid black 1px;
+    border: solid 1px;
     padding: 5px;
     max-width: fit-content;
     overflow-x: scroll;
 }
 
 .gemini code {
-    border: solid black 1px;
+    border: solid 1px;
     padding: 1px 2px;
+    margin: 1px 2px;
 }
 
 .gemini a {
