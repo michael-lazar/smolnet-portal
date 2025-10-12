@@ -8,13 +8,13 @@
 <div class="gemini">
 {% for item in content -%}
     {% if item.item_type == "h1" -%}
-        <h1 id="{{ item.anchor }}">{{ item.text }}</h1>
+        <h1>{{ item.text }}</h1>
     {% elif item.item_type == "h2" -%}
-        <h2 id="{{ item.anchor }}">{{ item.text }}</h2>
+        <h2 id="{{ item.anchor }}">{{ item.anchor }}. {{ item.text }}</h2>
     {% elif item.item_type == "h3" -%}
-        <h3 id="{{ item.anchor }}">{{ item.text }}</h3>
+        <h3 id="{{ item.anchor }}">{{ item.anchor }}. {{ item.text }}</h3>
     {% elif item.item_type == "h4" -%}
-        <h4 id="{{ item.anchor }}">{{ item.text }}</h4>
+        <h4 id="{{ item.anchor }}">{{ item.anchor }}. {{ item.text }}</h4>
     {% elif item.item_type == "h5" -%}
         <h5>{{ item.text }}</h5>
     {% elif item.item_type == "link" -%}

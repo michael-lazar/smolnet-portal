@@ -1,12 +1,18 @@
 import re
-from collections import Counter
 from collections.abc import Iterable
+from enum import Enum
 from typing import Any
 
 from markupsafe import Markup, escape
 
 from geminiportal.handlers.base import TemplateHandler
 from geminiportal.utils import parse_link_line, split_emoji
+
+
+class AnchorLevel(Enum):
+    H2 = 2
+    H3 = 3
+    H4 = 4
 
 
 class ScrollHandler(TemplateHandler):
@@ -18,20 +24,53 @@ class ScrollHandler(TemplateHandler):
 
     line_buffer: list[str]
     active_type: str | None
-    anchor_counter: Counter[str]
+    anchor_counters: dict[AnchorLevel, int]
 
-    def get_anchor(self, text: str) -> str:
+    def bump_h2_anchor(self):
+        self.anchor_counters[AnchorLevel.H2] += 1
+        self.anchor_counters[AnchorLevel.H3] = 0
+        self.anchor_counters[AnchorLevel.H4] = 0
+
+    def bump_h3_anchor(self):
+        if self.anchor_counters[AnchorLevel.H2] == 0:
+            self.bump_h2_anchor()
+
+        self.anchor_counters[AnchorLevel.H3] += 1
+        self.anchor_counters[AnchorLevel.H4] = 0
+
+    def bump_h4_anchor(self):
+        if self.anchor_counters[AnchorLevel.H3] == 0:
+            self.bump_h3_anchor()
+
+        self.anchor_counters[AnchorLevel.H4] += 1
+
+    def get_anchor(self, level: AnchorLevel) -> str:
         """
         Add link anchors to scrolltext header lines.
         """
-        text = text.strip()
-        text = text.lower()
-        text = text.replace(" ", "-")
-        text = re.sub(r"[^\w-]", "", text)
-        self.anchor_counter[text] += 1
-        if self.anchor_counter[text] > 1:
-            text += f"-{self.anchor_counter[text] - 1}"
-        return text
+        match level:
+            case AnchorLevel.H2:
+                self.bump_h2_anchor()
+                return str(self.anchor_counters[AnchorLevel.H2])
+            case AnchorLevel.H3:
+                self.bump_h3_anchor()
+                return ".".join(
+                    (
+                        str(self.anchor_counters[AnchorLevel.H2]),
+                        str(self.anchor_counters[AnchorLevel.H3]),
+                    )
+                )
+            case AnchorLevel.H4:
+                self.bump_h4_anchor()
+                return ".".join(
+                    (
+                        str(self.anchor_counters[AnchorLevel.H2]),
+                        str(self.anchor_counters[AnchorLevel.H3]),
+                        str(self.anchor_counters[AnchorLevel.H4]),
+                    )
+                )
+            case _:
+                raise ValueError()
 
     def get_context(self) -> dict[str, Any]:
         context = super().get_context()
@@ -51,7 +90,11 @@ class ScrollHandler(TemplateHandler):
     def iter_content(self) -> Iterable[dict]:
         self.line_buffer = []
         self.active_type = None
-        self.anchor_counter = Counter()
+        self.anchor_counters = {
+            AnchorLevel.H2: 0,
+            AnchorLevel.H3: 0,
+            AnchorLevel.H4: 0,
+        }
 
         for line in self.text.splitlines():
             line = line.rstrip()
@@ -65,6 +108,7 @@ class ScrollHandler(TemplateHandler):
                 self.line_buffer.append(line)
 
             elif line.startswith("=>"):
+                # TODO: add citation for quote
                 yield from self.flush()
                 url, link_text, prefix = parse_link_line(line[2:], self.url)
                 yield {
@@ -94,32 +138,45 @@ class ScrollHandler(TemplateHandler):
             elif line.startswith("####"):
                 yield from self.flush()
                 text = line[4:].lstrip()
-                anchor = self.get_anchor(text)
+                anchor = self.get_anchor(AnchorLevel.H4)
                 yield {"item_type": "h4", "text": text, "anchor": anchor}
 
             elif line.startswith("###"):
                 yield from self.flush()
                 text = line[3:].lstrip()
-                anchor = self.get_anchor(text)
+                anchor = self.get_anchor(AnchorLevel.H3)
                 yield {"item_type": "h3", "text": text, "anchor": anchor}
 
             elif line.startswith("##"):
                 yield from self.flush()
                 text = line[2:].lstrip()
-                anchor = self.get_anchor(text)
+                anchor = self.get_anchor(AnchorLevel.H2)
                 yield {"item_type": "h2", "text": text, "anchor": anchor}
 
             elif line.startswith("#"):
                 yield from self.flush()
                 text = line[1:].lstrip()
-                anchor = self.get_anchor(text)
-                yield {"item_type": "h1", "text": text, "anchor": anchor}
+                yield {"item_type": "h1", "text": text}
 
             elif line.startswith("* "):
+                # Note: The spec allows nested lists, currently unsupported.
+                #
+                # * Unordered list item 1
+                # ** 1. Ordered sub-list item 1
+                # ** 2. Ordered sub-list item 2
+                # * Unordered list item 2
+                # ...
+
                 yield from self.flush("ul")
                 self.line_buffer.append(line[1:].lstrip())
 
             elif line.startswith("> ") or line == ">":
+                # Note: The spec allows nested quotes, currently unsupported.
+                #
+                # > Quote level 1
+                # >> Quote level 2
+                # ...
+
                 yield from self.flush("blockquote")
                 self.line_buffer.append(line[2:])
 
@@ -153,6 +210,7 @@ class ScrollHandler(TemplateHandler):
         """
         Simple parser that converts inline markup into sanitized HTML tags.
         """
+        # TODO: it's kinda broken, see test file
         text = str(escape(text))
         text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
         text = re.sub(r"\*([^*]+)\*", r"<b>\1</b>", text)
