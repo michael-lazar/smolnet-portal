@@ -251,16 +251,13 @@ class BaseProxyResponseBuilder:
     def __init__(self, response: BaseResponse):
         self.response = response
 
-    def get_handler_class(self):
-        return get_handler_class(self.response)
-
     async def render_from_handler(self) -> QuartResponse:
         handler_class: type[BaseHandler]
 
         if self.response.options.raw:
             handler_class = StreamHandler
         else:
-            handler_class = self.get_handler_class()
+            handler_class = get_handler_class(self.response)
 
         try:
             handler = await handler_class.from_response(self.response)

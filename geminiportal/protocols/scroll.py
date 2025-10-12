@@ -9,7 +9,6 @@ from quart import Response as QuartResponse
 from quart import render_template
 from werkzeug.utils import redirect
 
-from geminiportal.handlers.scroll import ScrollMetadataHandler
 from geminiportal.protocols.base import (
     BaseProxyResponseBuilder,
     BaseRequest,
@@ -136,7 +135,7 @@ class ScrollResponse(BaseResponse):
     }
 
     document_meta: DocumentMetadata
-    is_meta_response: bool
+    is_scroll_meta: bool
 
     tls_cert: bytes
     tls_version: str
@@ -163,7 +162,7 @@ class ScrollResponse(BaseResponse):
         self.meta = meta
 
         self.document_meta = document_meta
-        self.is_meta_response = request.options.meta
+        self.is_scroll_meta = request.options.meta
 
         self.tls_cert = tls_cert
         self.tls_version = tls_version
@@ -188,12 +187,6 @@ class ScrollResponse(BaseResponse):
 
 class ScrollProxyResponseBuilder(BaseProxyResponseBuilder):
     response: ScrollResponse
-
-    def get_handler_class(self):
-        if self.response.is_meta_response:
-            return ScrollMetadataHandler
-
-        return super().get_handler_class()
 
     async def build_proxy_response(self):
         if self.response.options.raw_crt:

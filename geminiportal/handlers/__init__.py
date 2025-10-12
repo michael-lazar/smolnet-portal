@@ -14,7 +14,7 @@ from geminiportal.handlers.gopherplus import GopherPlusHandler
 from geminiportal.handlers.gophervr import GopherVRHandler
 from geminiportal.handlers.image import ImageHandler
 from geminiportal.handlers.nex import NexHandler
-from geminiportal.handlers.scroll import ScrollHandler
+from geminiportal.handlers.scroll import ScrollHandler, ScrollMetadataHandler
 from geminiportal.handlers.text import TextHandler
 
 
@@ -23,6 +23,8 @@ def get_handler_class(response: BaseResponse) -> type[BaseHandler]:
 
     if response.mimetype is None:
         handler_class = FileDownloadHandler
+    elif getattr(response, "is_scroll_meta"):
+        handler_class = ScrollMetadataHandler
     elif response.mimetype.startswith(
         (
             "text/html",
