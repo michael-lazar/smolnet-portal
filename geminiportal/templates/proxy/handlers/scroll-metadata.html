@@ -1,0 +1,12 @@
+{% extends "proxy/handlers/scroll.html" %}
+
+{% block content %}
+<h2>Metadata Response</h2>
+<table class="metadata-table">
+  <tr><th>Resource</th><td><a href="{{ proxy_url }}">{{ url }}</a></td></tr>
+  <tr><th>Author</th><td>{{ response.document_meta.author or "-"}}</td></tr>
+  <tr><th>Published</th><td>{% if response.document_meta.publish_date %}<span title="{{ response.document_meta.publish_date }}">{{ response.document_meta.publish_date.strftime('%B %d, %Y') }}</span>{% else %}-{% endif %}</td></tr>
+  <tr><th>Modified</th><td>{% if response.document_meta.modification_date %}<span title="{{ response.document_meta.modification_date }}">{{ response.document_meta.modification_date.strftime('%B %d, %Y') }}</span>{% else %}-{% endif %}</td></tr>
+  <tr><th>Abstract</th><td>{{ super() }}</td></tr>
+</table>
+{% endblock %}

@@ -136,7 +136,6 @@ class ScrollResponse(BaseResponse):
     }
 
     document_meta: DocumentMetadata
-
     is_meta_response: bool
 
     tls_cert: bytes

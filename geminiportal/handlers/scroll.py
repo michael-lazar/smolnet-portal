@@ -250,6 +250,8 @@ class ScrollMetadataHandler(ScrollHandler):
     template to indicate that it's an "abstract" instead of a normal document.
     """
 
+    template = "proxy/handlers/scroll-metadata.html"
+
     @classmethod
     async def from_response(cls, response) -> TemplateHandler:
         # The metadata responses should always be rendered text/scroll,
@@ -261,8 +263,3 @@ class ScrollMetadataHandler(ScrollHandler):
             mimetype="text/scroll",
             charset="utf-8",
         )
-
-    def get_context(self) -> dict[str, Any]:
-        context = super().get_context()
-        context["is_metadata"] = True
-        return context

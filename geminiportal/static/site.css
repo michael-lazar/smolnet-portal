@@ -25,6 +25,30 @@ body {
     padding: 5px;
 }
 
+.metadata-table {
+    border: 0;
+    border-collapse: collapse;
+    margin: 0 20px;
+}
+
+.metadata-table th {
+    min-width: 3em;
+    text-align: left;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    vertical-align: top;
+}
+
+.metadata-table td {
+    min-width: 3em;
+    padding: 5px;
+}
+
+.metadata-table .gemini {
+    margin-top: 0;
+}
+
 div {
     margin-bottom: 0.6em;
 }
