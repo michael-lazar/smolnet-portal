@@ -23,7 +23,7 @@ def get_handler_class(response: BaseResponse) -> type[BaseHandler]:
 
     if response.mimetype is None:
         handler_class = FileDownloadHandler
-    elif getattr(response, "is_scroll_meta"):
+    elif getattr(response, "is_scroll_meta", False):
         handler_class = ScrollMetadataHandler
     elif response.mimetype.startswith(
         (
