@@ -177,6 +177,16 @@ details summary {
     font-size: 1.1em;
 }
 
+.gemini .header-anchor {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.gemini .header-anchor:hover {
+    text-decoration: underline;
+}
+
 .gemini > ul {
     padding-left: 1em;
 }

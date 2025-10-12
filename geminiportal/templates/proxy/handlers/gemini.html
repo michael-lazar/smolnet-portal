@@ -8,11 +8,11 @@
 <div class="gemini">
 {% for item in content -%}
     {% if item.item_type == "h1" -%}
-        <h1 id="{{ item.anchor }}">{{ item.text }}</h1>
+        <h1 id="{{ item.anchor }}"><a href="#{{ item.anchor }}" class="header-anchor">{{ item.text }}</a></h1>
     {% elif item.item_type == "h2" -%}
-        <h2 id="{{ item.anchor }}">{{ item.text }}</h2>
+        <h2 id="{{ item.anchor }}"><a href="#{{ item.anchor }}" class="header-anchor">{{ item.text }}</a></h2>
     {% elif item.item_type == "h3" -%}
-        <h3 id="{{ item.anchor }}">{{ item.text }}</h3>
+        <h3 id="{{ item.anchor }}"><a href="#{{ item.anchor }}" class="header-anchor">{{ item.text }}</a></h3>
     {% elif item.item_type == "link" -%}
         {{ item.prefix }}<a href="{{ item.url }}">{{ item.text }}</a>{% if item.external_indicator %} <span>({{ item.external_indicator }})</span>{% endif %}<br/>
     {% elif item.item_type == "pre" -%}
