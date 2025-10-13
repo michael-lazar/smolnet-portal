@@ -18,6 +18,7 @@ class ProxyOptions(NamedTuple):
     vr: bool = False
     crt: bool = False
     meta: bool = False
+    reader: bool = False
 
 
 async def describe_tls_cert(tls_cert: bytes) -> str:

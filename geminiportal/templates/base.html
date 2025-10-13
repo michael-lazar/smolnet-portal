@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  {% block favicon %}
-    <link rel="icon" href="/static/favicon.ico">{% endblock %}
+  {% block favicon %}<link rel="icon" href="/static/favicon.ico">{% endblock %}
   <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
   <link rel="stylesheet" href="/static/site.css">
   <meta name="apple-mobile-web-app-title" content="Gemini">
@@ -13,6 +12,7 @@
   {% block extrahead %}{% endblock %}
 </head>
 <body>
+{% block header %}
 <div class="header">
   <a class="title" href="/">SMOLNET PORTAL</a>
   <span class="navbar">
@@ -22,6 +22,7 @@
     </span>
   <hr>
 </div>
+{% endblock %}
 <div class="body">
   {% block body %}{% endblock %}
 </div>

@@ -15,21 +15,30 @@ font-size=%2290%22&gt;{{ favicon }}&lt;/text&gt;&lt;/svg&gt;">
   {% if response %}{{ response.title_display }}{% else %}{{ super() }}{% endif %}
 {% endblock %}
 
+{% block header %}
+  {% if not reader %}{{ super() }}{% endif %}
+{% endblock %}
+
 {% block body %}
-{% include "url-bar.html" %}
+{% if not reader %}{% include "url-bar.html" %}{% endif %}
 <div class="link-line">
+  {% if reader %}
+    {% if proxy_url %}<a href="{{ proxy_url }}" title="Exit reader mode">[exit&nbsp;reader&nbsp;mode]</a>{% endif %}
+  {% else %}
     {% if root_url %}<a href="{{ root_url }}" title="Navigate to the root directory">[root]</a>{% endif %}
     {% if parent_url %}<a href="{{ parent_url }}" title="Navigate to the parent directory">[parent]</a>{% endif %}
     {% if proxy_url %}<a href="{{ proxy_url }}" title="Refresh the current page">[refresh]</a>{% endif %}
     {% if meta_url %}<a href="{{ meta_url }}" title="Fetch the metadata for the current page">[meta]</a>{% endif %}
     {% if vr_url %}<a href="{{ vr_url }}" title="View the current page in web VR (experimental)">[GopherVR]</a>{% endif %}
     {% if cert_url %}<a href="{{ cert_url }}" title="View the TLS certificate details for the request">[cert]</a>{% endif %}
+    {% if reader_url %}<a href="{{ reader_url }}" title="Enter visual reader mode">[reader]</a>{% endif %}
     {% if raw_url %}<a href="{{ raw_url }}" title="View the response as a raw data stream">[raw]</a>{% endif %}
+  {% endif %}
 </div>
 
 <div class="content">
 {% block content %}{%- endblock %}
-{% if response %}
+{% if response and not reader %}
 {% set charset = (handler.charset if handler else "") or response.charset or "" %}
 <details>
   <summary>Response:
@@ -38,7 +47,7 @@ font-size=%2290%22&gt;{{ favicon }}&lt;/text&gt;&lt;/svg&gt;">
   </summary>
   <table class="response-table">
     <tr><th>Original&nbsp;URL</th><td><a href="{{ response.url }}">{{ response.url.get_url()|truncate(60, True) }}</a></td></tr>
-    {% if response.status %}<tr><th>Status Code</th><td>{{ response.status_display }}</td></tr>{% endif %}
+    {% if response.status %}<tr><th>Status&nbsp;Code</th><td>{{ response.status_display }}</td></tr>{% endif %}
     {% if response.mimetype %}<tr><th>Content-Type</th><td>{{ response.mimetype }}{% if charset %}; charset={{ charset.lower() }}{% endif %}{% if response.lang %}; lang={{ response.lang }}{% endif %}</td></tr>{% endif %}
   </table>
 </details>

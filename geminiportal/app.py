@@ -61,6 +61,7 @@ def inject_context():
         kwargs["root_url"] = g.url.get_root_proxy_url()
         kwargs["parent_url"] = g.url.get_parent_proxy_url() or kwargs["root_url"]
         kwargs["raw_url"] = g.url.get_proxy_url(raw=1)
+        kwargs["reader_url"] = g.url.get_proxy_url(reader=1)
 
         if "response" in g and g.response.mimetype in (
             "application/gopher-menu",
@@ -77,6 +78,10 @@ def inject_context():
 
     if "favicon" in g and g.favicon:
         kwargs["favicon"] = g.favicon
+
+    if "options" in g:
+        kwargs["reader"] = g.options.reader
+
     return kwargs
 
 
@@ -201,6 +206,7 @@ async def proxy(
         vr=bool(request.args.get("vr")),
         crt=bool(request.args.get("crt")),
         meta=bool(request.args.get("meta")),
+        reader=bool(request.args.get("reader")),
     )
 
     captcha_response = await check_captcha(options)
@@ -211,6 +217,7 @@ async def proxy(
     response = await proxy_request.get_response()
 
     g.response = response
+    g.options = options
     g.favicon = favicon_cache.check(g.url)
 
     proxy_response = await response.build_proxy_response()
