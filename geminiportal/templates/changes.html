@@ -9,21 +9,24 @@
   </p>
   <ul>
     <li>
-      There's a new <a href="/scroll/scrollprotocol.us.to/?meta=1">[meta]</a> link at the top of
+      There's a <a href="/scroll/scrollprotocol.us.to/?meta=1">[meta]</a> link at the top of
       the page that will make a metadata request for the current document.
     </li>
     <li>
       You can specify your desired response language by adding a <i>?lang=&lt;code&gt;</i> query parameter.
       <ul>
         <li>For example, <a href="/scroll/scrollprotocol.us.to/?lang=es">/scroll/scrollprotocol.us.to/?lang=es</a>.</li>
+        <li>(I haven't found any examples in-the-wild to test this with)</li>
       </ul>
     </li>
   </ul>
   <h4>Other Changes</h4>
   <ul>
-    <li>Added a <a href="/gemini/mozz.us/">[refresh]</a> link at the top the page to reload the current URL.</li>
     <li>Headers in gemini/spartan/scroll responses are now page anchors with clickable links.</li>
-    <li>Fixed handling of malformed gemini link lines containing only <i>"=>"</i>.</li>
+    <li>Added a <a href="/gemini/mozz.us/">[refresh]</a> link at the top the page to reload the current URL.</li>
+    <li>Exposed the <a href="/gopher/gopher.floodgap.com/?vr=1">[GopherVR]</a> link for gopher pages (still experimental).</li>
+    <li>Added tooltip descriptions for the navigation links at the top of the page.</li>
+    <li>Fixed handling of malformed gemini link lines containing only "=>".</li>
   </ul>
   <h3>2025-09-07</h3>
   <ul>

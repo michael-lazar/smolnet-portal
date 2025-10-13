@@ -18,13 +18,13 @@ font-size=%2290%22&gt;{{ favicon }}&lt;/text&gt;&lt;/svg&gt;">
 {% block body %}
 {% include "url-bar.html" %}
 <div class="link-line">
-    {% if root_url %}<a href="{{ root_url }}">[root]</a>{% endif %}
-    {% if parent_url %}<a href="{{ parent_url }}">[parent]</a>{% endif %}
-    {% if proxy_url %}<a href="{{ proxy_url }}">[refresh]</a>{% endif %}
-    {% if meta_url %}<a href="{{ meta_url }}">[meta]</a>{% endif %}
-{#    {% if vr_url %}<a href="{{ vr_url }}">[GopherVR]</a>{% endif %}#}
-    {% if cert_url %}<a href="{{ cert_url }}">[cert]</a>{% endif %}
-    {% if raw_url %}<a href="{{ raw_url }}">[raw&nbsp;file]</a>{% endif %}
+    {% if root_url %}<a href="{{ root_url }}" title="Navigate to the root directory">[root]</a>{% endif %}
+    {% if parent_url %}<a href="{{ parent_url }}" title="Navigate to the parent directory">[parent]</a>{% endif %}
+    {% if proxy_url %}<a href="{{ proxy_url }}" title="Refresh the current page">[refresh]</a>{% endif %}
+    {% if meta_url %}<a href="{{ meta_url }}" title="Fetch the metadata for the current page">[meta]</a>{% endif %}
+    {% if vr_url %}<a href="{{ vr_url }}" title="View the current page in web VR (experimental)">[GopherVR]</a>{% endif %}
+    {% if cert_url %}<a href="{{ cert_url }}" title="View the TLS certificate details for the request">[cert]</a>{% endif %}
+    {% if raw_url %}<a href="{{ raw_url }}" title="View the response as a raw data stream">[raw]</a>{% endif %}
 </div>
 
 <div class="content">
