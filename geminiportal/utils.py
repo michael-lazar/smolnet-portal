@@ -49,7 +49,9 @@ def parse_link_line(line: str, base: URLReference) -> tuple[URLReference, str, s
     prefix = ""
 
     parts = line.split(maxsplit=1)
-    if len(parts) == 1:
+    if len(parts) == 0:
+        link, link_text = "", ""
+    elif len(parts) == 1:
         link, link_text = parts[0], parts[0]
     else:
         link, link_text = parts
