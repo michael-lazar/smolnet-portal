@@ -57,7 +57,8 @@ def inject_context():
 
     if "url" in g:
         kwargs["url"] = g.url.get_url()
-        kwargs["proxy_url"] = g.url.get_proxy_url()
+        # Setting reader=None forces reader mode to be cleared when opening this link
+        kwargs["proxy_url"] = g.url.get_proxy_url(reader=None)
         kwargs["root_url"] = g.url.get_root_proxy_url()
         kwargs["parent_url"] = g.url.get_parent_proxy_url() or kwargs["root_url"]
         kwargs["raw_url"] = g.url.get_proxy_url(raw=1)
@@ -200,7 +201,6 @@ async def proxy(
     options = ProxyOptions(
         charset=request.args.get("charset") or None,
         lang=request.args.get("lang") or None,
-        format=request.args.get("format") or None,
         raw=bool(request.args.get("raw")),
         raw_crt=bool(request.args.get("raw_crt")),
         vr=bool(request.args.get("vr")),

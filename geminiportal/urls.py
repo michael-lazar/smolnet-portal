@@ -7,7 +7,7 @@ import os.path
 import urllib.parse
 from urllib.parse import quote, unquote_to_bytes, urljoin, urlparse, urlunparse
 
-from quart import url_for
+from quart import g, url_for
 
 # Add custom mimetypes for extensions not defined by the filesystem
 mimetypes.add_type("text/gemini", ".gmi")
@@ -474,6 +474,12 @@ class URLReference:
         else:
             path = urlunparse(("", "", self.path, self.params, self.query, ""))
             anchor = self.fragment or None
+
+        # If we're currently in reader mode, make all proxy links preserve reader mode unless
+        # explicitly overridden by setting reader=None
+        if "options" in g:
+            if g.options.reader:
+                query_params.setdefault("reader", "1")
 
         if path:
             return url_for(
