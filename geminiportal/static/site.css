@@ -250,10 +250,6 @@ details summary {
     margin: auto;
 }
 
-.gopher tr.selectable:hover {
-    background: lightgray;
-}
-
 .gopher td {
     padding-right: 1em;
     border: 0;
@@ -334,6 +330,7 @@ iframe {
     .gopher tr.selectable:hover {
         background: rgb(45, 48, 52);
     }
+
     .title {
         color: #6dcaff;
     }
