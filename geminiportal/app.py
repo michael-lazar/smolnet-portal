@@ -157,6 +157,10 @@ async def check_captcha(options: ProxyOptions) -> Response | WerkzeugResponse | 
         # Allow niche browsers like curl, lynx, etc.
         return None
 
+    if "HTMLPDF" in user_agent:
+        # Allow www.sejda.com HTML -> PDF conversion tool
+        return None
+
     captcha = request.cookies.get("captcha")
     if captcha:
         after_this_request(set_captcha_cookie)
