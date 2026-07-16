@@ -1,5 +1,6 @@
 import pytest
 
+from geminiportal.errors import RequestBlockedError
 from geminiportal.protocols import (
     FingerRequest,
     GeminiRequest,
@@ -69,13 +70,13 @@ def test_build_proxy_request_missing_host():
 
 def test_build_proxy_request_blocked_host():
     url = URLReference("gemini://vger.cloud/hello")
-    with pytest.raises(ValueError):
+    with pytest.raises(RequestBlockedError):
         build_proxy_request(url)
 
 
 def test_build_proxy_request_blocked_port():
     url = URLReference("gemini://mozz.us:22")
-    with pytest.raises(ValueError):
+    with pytest.raises(RequestBlockedError):
         build_proxy_request(url)
 
 

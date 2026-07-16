@@ -5,6 +5,7 @@ import ssl
 from quart import Response as QuartResponse
 from quart import render_template
 
+from geminiportal.errors import UpstreamResponseError
 from geminiportal.handlers.gopher import GopherItem
 from geminiportal.protocols.base import (
     BaseProxyResponseBuilder,
@@ -44,10 +45,15 @@ class GopherRequest(BaseRequest):
             status_line = raw_status_line.decode()
             status, meta = status_line[0], status_line[1:]
         else:
-            raise ValueError("Invalid response, this server does not support Gopher+.")
+            raise UpstreamResponseError("Invalid response, this server does not support Gopher+.")
 
         header = raw_header.decode()
-        data_length = int(header[1:])
+        try:
+            data_length = int(header[1:])
+        except ValueError:
+            raise UpstreamResponseError(
+                f'Invalid length in Gopher+ response header: "{header.strip()}"'
+            )
         meta = meta.strip()
 
         return GopherPlusResponse(
@@ -130,7 +136,7 @@ class GopherPlusProxyResponseBuilder(BaseProxyResponseBuilder):
             )
             return QuartResponse(content)
         elif self.response.status:
-            data = await self.response.get_body()
+            data = await self.response.get_body(truncate=True)
             body, _ = smart_decode(data, self.response.charset)
             body = body.strip()
             content = await render_template(

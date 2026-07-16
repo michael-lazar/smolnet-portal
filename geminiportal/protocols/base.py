@@ -11,6 +11,11 @@ from collections.abc import AsyncIterator
 from quart import Response as QuartResponse
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
+from geminiportal.errors import (
+    RequestBlockedError,
+    UpstreamConnectionError,
+    UpstreamTimeoutError,
+)
 from geminiportal.handlers import get_handler_class
 from geminiportal.handlers.base import BaseHandler, StreamHandler
 from geminiportal.urls import URLReference
@@ -52,11 +57,15 @@ ALLOWED_PORTS = {
 CONNECT_TIMEOUT = 10
 
 
-class ProxyError(Exception):
-    pass
+class ResponseSizeExceeded(Exception):
+    """
+    The response body exceeded the maximum size that can be buffered
+    into memory.
 
+    Carries the data read so far, and leaves the connection open so
+    that the response can be re-rendered as a raw data stream.
+    """
 
-class ProxyResponseSizeError(ProxyError):
     def __init__(self, partial: bytes):
         super().__init__(f"Maximum response size of {len(partial)} bytes read.")
         self.partial = partial
@@ -79,21 +88,31 @@ class BaseRequest:
     def clean(self):
         for pattern in self._blocked_hosts:
             if pattern.match(self.host):
-                raise ValueError(
-                    "This host has kindly requested that their content "
-                    "not be accessed via web proxy."
+                raise RequestBlockedError(
+                    f'The host "{self.host}" has kindly requested that their '
+                    "content not be accessed via web proxy."
                 )
         if self.port not in ALLOWED_PORTS:
-            raise ValueError(f"Proxied content is disabled over port {self.port}.")
+            raise RequestBlockedError(f"Proxied content is disabled over port {self.port}.")
 
     async def get_response(self):
         _logger.info(f"{self.__class__.__name__}: Making request to {self.url}")
         try:
             response = await self.fetch()
         except socket.gaierror:
-            raise ProxyError(f'Unable to establish connection with host "{self.host}"')
+            raise UpstreamConnectionError(
+                f'The hostname "{self.host}" could not be resolved.',
+            )
+        except ConnectionRefusedError:
+            raise UpstreamConnectionError(
+                f'The server at "{self.host}" refused the connection on port {self.port}.'
+            )
+        except ssl.SSLError as e:
+            raise UpstreamConnectionError(
+                f'A secure TLS connection could not be established with "{self.host}".'
+            ) from e
         except OSError as e:
-            raise ProxyError(f"Connection error: {e}")
+            raise UpstreamConnectionError(f'The connection to "{self.host}" failed.') from e
 
         _logger.info(f"{self.__class__.__name__}: Response received: {response.status}")
         return response
@@ -114,7 +133,10 @@ class BaseRequest:
         try:
             reader, writer = await asyncio.wait_for(future, timeout=CONNECT_TIMEOUT)
         except asyncio.TimeoutError:
-            raise ProxyError("Timeout establishing connection with server")
+            raise UpstreamTimeoutError(
+                f'The server at "{self.host}" did not accept the connection '
+                f"after {CONNECT_TIMEOUT} seconds."
+            )
 
         peername = writer.get_extra_info("peername")
         if peername:
@@ -206,7 +228,7 @@ class BaseResponse:
             # that ahead of time.
             _logger.warning(f"Error closing socket: {e}")
 
-    async def get_body(self) -> bytes:
+    async def get_body(self, truncate: bool = False) -> bytes:
         """
         Return the entire response body as bytes, up to the max body size.
         """
@@ -221,10 +243,13 @@ class BaseResponse:
             self.close()
             raise
         else:
-            # We have reached the MAX_BODY_SIZE before the EOF was
-            # received. Don't close the connection just yet, because
-            # we may want to continue streaming the connection.
-            raise ProxyResponseSizeError(data)
+            # We have reached the MAX_BODY_SIZE before the EOF was received.
+            if truncate:
+                self.close()
+                return data
+            # Don't close the connection just yet, because we may want
+            # to continue streaming the connection.
+            raise ResponseSizeExceeded(data)
 
     async def stream_body(self) -> AsyncIterator[bytes]:
         """
@@ -262,7 +287,7 @@ class BaseProxyResponseBuilder:
         try:
             handler = await handler_class.from_response(self.response)
             response = await handler.render()
-        except ProxyResponseSizeError as e:
+        except ResponseSizeExceeded as e:
             # The file is too large to render in an HTML template, add the
             # data back into the read buffer and re-render as a data stream.
             handler = await StreamHandler.from_partial_response(self.response, e.partial)

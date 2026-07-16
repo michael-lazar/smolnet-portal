@@ -1,0 +1,12 @@
+{% extends "proxy/base.html" %}
+
+{% block content %}
+<h2>{{ error.title }}</h2>
+<p><i>{{ error.explanation }}</i></p>
+{% if error|string %}
+<p>{{ error }}</p>
+{% endif %}
+{% if error.detail %}
+<blockquote><code>{{ error.detail }}</code></blockquote>
+{% endif %}
+{% endblock %}

@@ -4,6 +4,7 @@ from quart import Response as QuartResponse
 from quart import render_template
 from werkzeug.utils import redirect
 
+from geminiportal.errors import UpstreamResponseError
 from geminiportal.protocols.base import (
     BaseProxyResponseBuilder,
     BaseRequest,
@@ -63,15 +64,13 @@ class TxtProxyResponseBuilder(BaseProxyResponseBuilder):
 
         elif self.response.status == "40":
             content = await render_template(
-                "proxy/proxy-error.html",
+                "proxy/server-error.html",
                 error=self.response.status_display,
                 message=self.response.meta,
             )
             return QuartResponse(content)
 
         else:
-            content = await render_template(
-                "proxy/gateway-error.html",
-                error="The response from the proxied server is unrecognized or invalid.",
+            raise UpstreamResponseError(
+                f'The server returned an unrecognized status code "{self.response.status}".'
             )
-            return QuartResponse(content)

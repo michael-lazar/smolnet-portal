@@ -34,7 +34,7 @@ class BaseHandler:
         raise NotImplementedError
 
     @classmethod
-    def from_response(cls, response: BaseResponse):
+    async def from_response(cls, response: BaseResponse):
         raise NotImplementedError
 
 

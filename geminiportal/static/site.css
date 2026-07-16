@@ -183,11 +183,19 @@ details summary {
     line-height: 1.5em;
 }
 
+.content > blockquote,
 .gemini > blockquote {
     white-space: pre-wrap;
     font-style: italic;
+}
+
+.gemini > blockquote {
     border-left: 1px solid;
     padding-left: 10px;
+}
+
+.content > blockquote code {
+    font-style: normal;
 }
 
 .gemini > h1 {

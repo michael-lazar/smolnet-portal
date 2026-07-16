@@ -1,0 +1,8 @@
+{% extends "proxy/base.html" %}
+
+{% block content %}
+<h2>Server Error</h2>
+{# Keep the tone of this line consistent with the explanations in geminiportal/errors.py #}
+<p><i>The request to the remote server returned an error.</i></p>
+<blockquote><b>{{ error }}</b>{% if message %}<br>{{ message }}{% endif %}</blockquote>
+{% endblock %}

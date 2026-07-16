@@ -1,0 +1,291 @@
+Author: Christian Lee Seibold
+Publish Date: 2025-07-23T20:50:51Z
+Modification Date: 2024-08-03T14:11:29Z
+# Scroll Protocol Speculative Specification
+
+See modification date metadata (via Scroll) for last update date.
+
+## Scrolltext Format
+
+Mimetype: text/scroll
+File Extension: .scroll
+
+The scrolltext format is a descriptive markup language inspired by Gemtext, Markdown, and AsciiDoc. It is designed to be streamable and easy to parse, and contains the most important elements within most textual documents, printed and digital. Scrolltext is therefore line-based, much like gemtext.
+
+### Sections and Headings
+
+Unlike HTML, scrolltext is made up of sections that encompass a heading of a particular level and span up to the next heading of the same level. Sections are split up into sub-sections via higher-level headings. Headings, therefore, denote the start of new sections.
+
+Heading lines are prefied with `#`, `##`, `###`, and an additional fourth-level heading `####` and fifth-level heading `#####`, much like in gemtext and markdown. The first level-1 heading of a scrolltext page should be interpreted as the document's title; there should be no other level-1 heading in the document. Clients may give sections heading numbers, like `1`, `3.2`, and `1.4.3`. Dots delimit the level of the heading, where `3.2` refers to the second level-3 heading under the third level-2 heading. Note that the first number always denotes a level-2 heading.
+
+Level-5 headings do not need to be placed directly under a level-4 heading; they may be placed under any heading levels 1-4. They are always considered textual titles rather than section titles, and therefore should be excluded from outlines and tables of contents (e.g., the titling of a paragraph or set of paragraphs).
+
+Thematic breaks use three hyphens (`---`) on their own line. They are usually rendered as horizontal rules or three asterisks (which is the common rendering in printed books). They should be interpreted as thematic breaks within the section denoted by a level 1-4 heading. Note that they are never interpreted as being underneath level-5 headings.
+
+### Paragraphs
+
+Each line with none of the line prefixes described in this document should be interpreted as paragraphs. Lines are not reflowed, but they may be word-wrapped.
+
+### Code Blocks
+
+Code blocks define a block within the scrolltext that should be distinguished from the rest of the document as a textual format presented as plain text. They may be used for code blocks, ASCII Art, plain text, or other textual formats. They are usually presented visually in fixed-width fonts. Audial presentations should distinguish them from the surrounding text and should present the format tag to the listener.
+
+Code blocks should not be word-wrapped or justified, but they may be character-wrapped. Code blocks are toggled with three backticks (```) on the start of a line. This toggle toggles the start or end of a code block.
+
+The starting toggle of a code block may include an optional tag just after the three backticks that describes the format. Mimetypes starting with `text/` are permitted, but the `text/` prefix should be excluded. Therefore, `text/plain` should be written `plain`.
+
+Examples of code block tags include:
+* ascii-art
+* plain
+* a programming language name
+* `samp` for sample software input/output
+
+### Quotes and Lists
+
+Quotes are prefixed with `>`. They may be nested. Qutoed lines may be separated from each other by placing a blank line in between them.
+
+Unordered lists (bullets) are prefixed with an asterisk followed by a required whitespace character (`* `). It is the only linetype with a prefix that requires one whitespace character (a space or a tab). This *is* consistent because it is the only exception, an exception that allows one to distinguish between lines that begin with bold text (for clients that choose to render this) and unordered lists. Lists can be separated from each other by placing a blank line in between them.
+
+Unordered bullets may be nested by placing two or more asterisks next to each other, up to a limit of 4, followed by a space, like so: `** nested bullet`.
+
+Ordered lists use asterisks like the unordered bullets above, but the text starts with any number of decimal digit unicode codepoints (e.g., Rust's `char.is_digit(10)` or Golang's `unicode.IsDigit(r)`), followed by a dot ('.'), or by *one* character between 'a' and 'Z' followed by a dot. Rendering these differently from unordered lists is optional. Clients that choose to do so should render the number/character that was provided and not try to renumber the items. Ordered lists may be nested just like Unordered lists.
+```
+* Unordered list item 1
+** 1. Ordered sub-list item 1
+** 2. Ordered sub-list item 2
+* Unordered list item 2
+```
+
+Quote and list item lines are not reflowed, but they may be word-wrapped.
+
+### Links and URLs
+
+Links use the following format:
+```
+=>(<whitespace>)URL<whitespace>Link Text
+```
+
+Whitespace may be any number of spaces or tabs above zero. The parentheses denote optionality.
+
+The URL may be replaced with a `#hash` identifier to link to another heading/section of the current document. The hash for scrolltext documents should be the heading number described in the headings section (e.g., `3.2.4`). Hashes on URLs should be interpreted as links to a section/heading within the linked document.
+
+Links that are placed just under a quote should be interpreted as the citation for that quote. For example:
+```
+> This is a quote
+=> scroll://example.net/cited_text.pdf Cited Text Name
+```
+
+See the "Link Relations" section below for metadata that can be attached to links, and may be optionally utilized or rendered by the client.
+
+Lastly, when a user clicks on a link, clients may choose to inline the data depending on what contenttypes it supports. This is useful for images, audio, video, and even CSV files.
+
+#### Input Links
+
+One may use an input link to denote a link that accepts a query string or data upload, depending on the scheme of the URL used. The link's title should be seen as the input prompt. The input link may use a Scroll URL, or it may also use a Titan or Spartan URL, in which case the input should allow plain text upload or file upload, with some option to specify the mimetype where necessary. Scroll URLs do not allow data upload, and so should only use text and be requested via the query string. The syntax is as follows:
+```
+=:(<whitespace>)URL<whitespace>Prompt Text
+```
+
+Resources that change prompts depending on changing state may wish to use normal links to URLs that request input with the 10 and 11 status codes instead. The option of input links is provided for static prompts to support Spartan, and to allow for quicker input prompting for the other smallnet protocols.
+
+If an unsupported protocol scheme is linked, the client should display the input in a way which reflects that to the user, and the input should be disabled.
+
+### Inline Markup
+
+Strong, emphasis, and inline code blocks are semantic markup using toggles that are allowed inside paragraphs, list items, and blockquotes. The toggles are single asterisk, single underscore, and single backtick, respectively. Each toggle must have to one side a non-whitespace character that does not match the toggle character. A whitespace character in this instance includes the start of a document, the end of a document, newlines (CRLF and LF), tab, zero-width space (U+200B), and space. A toggle character that is between two symbols, as defined by Unicode's punctuation and symbol categories, should not be interpreted as a toggle.
+
+Inline code blocks may be used to delimit code, keyboard keystrokes, sample software input/output, or variables.
+
+All inline markup may not extend past the line ending. This means a toggle that is not toggled off will automatically be toggled off at the end of the line it is placed in. In simpler terms, strong, emphasis, and inline code blocks cannot extend to multiple paragraphs, multiple list items, or multiple paragraphs and list items inside blockquotes.
+
+Clients may choose not to present inline markup; however, it is highly recommended that audial clients parse them so that they can be presented differently from the surrounding text.
+
+### Linetype Escaping
+
+All linetypes may be escaped using a backslash at the beginning of the line. This includes the following escaping combinations: `\*` through `\****`, `\#` through `\#####`, `\>`, `\=>`, `\=:`, "\```", and `\---`. The backslash should not be interpreted as an escape in all other cases outside of these combinations.
+
+### Link Relations
+
+NOTE: This section on Link Relations is not final and may be changed or removed in the future.
+
+When using a link, you can place a relationship identifier in square brackets after the link's title text, like so:
+```
+=> scroll://example.net/sub/cited_text_name.txt Cited Text Name [Citation]
+=> scroll://example.net/sub/cross-referenced_text.txt Cross-referenced Text Name [-Citation]
+=> gemini://misfin.org Misfin Protocol
+=> /submit_to_guestbook Action: Submit to Guestbook
+
+> This is a quote
+=> scroll://example.net/cited_text.pdf Cited Text Name [+]
+```
+
+All relative links are thought of as sections/categories/subdirectories/superdirectories, actions, or resouces. Links that provide a Scheme and Hostname that have no relationship identifier should be thought of as cross-references.
+
+You can place a "+" or "-" in front of the relationship name, or by itself in brackets if there is no tag, to represent a positive or negative relationship. Negative relationships imply disagreement or critique, positive ones agreement or strengthening. When there is no "+" or "-", the relationship should be interpreted as neutral.
+
+Valid relationship identifier tags include: [Citation], [+Citation], [-Citation], [Cross-reference], [+Cross-reference], [-Cross-reference], [Alternate]
+
+One may use custom relationship identifier tags, but one cannot expect clients to recognize and interpret them. The only tags guaranteed to be interpreted by all clients that care about these tags are those listed above. Clients may or may not choose to parse and display these identifiers in a way that's distinct from the rest of the link; it is entirely optional. Lastly, tags should always be human-readable and can include spaces. Underscores in tags are heavily discouraged, and hyphens are cautioned against.
+
+### Parsing Scrolltext Streams
+
+Scrolltext is primarily meant to be streamed. This allows a document to be displayed as it is being downloaded. Linetypes are identified by a prefix string on each line. Each linetype determins how the rest of the line should be interpreted. Code block toggles change the interpretation of the following lines by toggling code blocks on/off.
+
+Within paragraphs, strong, emphasis, and monospace backticks should be interpreted as toggles that affect the following text within the line.
+
+### Procedural vs. Descriptive vs. Presentational
+
+Scrolltext is a descriptive markup language, meaning linetypes dictate what lines *are* _and_ how they should be processed. Scrolltext may be used procedurally in that documents can be translated from scrolltext to any other document format. In this way, the procedural vs. descriptive definitions are seen as a _false dichotomy_; all markup languages are "procedural" because all markup languages can be processed into other documents based on "instructions," or markup tags. In descriptive markup languages, the processing of the document is a function of the descriptive markup.
+
+Three backticks denote the start of code blocks, and may be seen as the only presentational markup within scrolltext. However, these code blocks are tagged with identifiers that describe the format of the contents, much like tags in XML and SGML languages, and so may be seen as descriptive.
+
+### Zero-Width Space
+
+Zero-width spaces are used in languages that do not have visible spaces, like Myanmar, Japanese, Thai, and Khmer. Everywhere where word-boundaries in natural-language text are interpreted, zero-width spaces should be considered whitespace. For the purposes of inline markup, zero-width spaces should be considered whitespace. Outside of those two instances, they are not considered whitespace.
+
+Non-visible characters should be prohibited in domain names to prevent homograph attacks. Browsers should error out when it sees non-visible characters in a domain name.
+
+## Request Format
+
+All request headers must use UTF-8. The request format is the following:
+```
+<URI><space><LanguageList><CRLF>
+```
+
+The request must not begin with a U+FEFF byte order mark.
+
+The URI is a UTF-8 encoded absolute URL, including a scheme, without URI parameters. Servers should error out on URLs that have parameters rather than ignore them.
+
+The language list is a comma-delimited list of BCP47 strings. Which languages go into the list should be handled by the client, so that every request uses the client's default language(s). Servers should respond to all requests by matching the desired languages in the list to the available languages and serving the content in the best match. Languages provided earlier in the list should be interpreted as more desired than those at the end of the list. If there is no match, the server may choose a default language, or leave it unspecified.
+
+Servers should always prefer the language list over any site settings in their user database. The use of language settings in site databases is heavily discouraged; they are no longer needed.
+
+Clients must not send anything after the first <CRLF> in a request, and servers must ignore anything sent after the first <CRLF>.
+
+## Error and Input Responses
+
+Must be in UTF-8. Format is the following:
+```
+<Status><space><Description><CRLF>
+```
+
+The Description may or may not be in one of the requested languages. It may also be blank. If it is blank, a space is still required between the Status and the Description. If the status is "10" or "11" (Input or Sensitive Input), then the Description should be interpreted as the Input Prompt.
+
+Status codes remain the same as in Gemini.
+
+## Success Response Format
+
+The response format uses the following for the 20-29 (success) status codes. The response's header (including the metadata information) must be in UTF-8. The data's charset is determined by the mimetype. If charset is unspecified, then clients might want to detect the charset for text files.
+
+The format is the following:
+```
+20<space><Mimetype><CRLF>
+<Author><CRLF>
+<PublishDate><CRLF>
+<ModificationDate><CRLF>
+<Data>
+```
+
+All dates are in UTC and ISO8601 format. The mimetype should contain the language parameter for natural-language text files. If any metadata is empty/unspecified, then its respective line is blank, ending in a <CRLF>. All other status codes remain the same as with Gemini.
+
+Note that ISO8601 is similar to RFC3339, but not exactly the same. You may get away with using RFC3339, but this "spec" standardizes on ISO8601. The "Z" suffix is required in all dates.
+
+### Success Status Codes
+
+The success status code's first digit is '2' and the second digit designates the categorization of the content, based on the main classes of the UDC (Universal Decimal Classification) system:
+
+* 0. General Science, Knowledge, Documentation (books, writings, authorship, software, software repository info), Reference works *as subject* (Encyclopedias, Dictionaries, Translators, etc.), Computer Science, News, Protocol RFCs, Data, software development logs, computer technology
+* 1. Philosophy (Ethics, Epistemology, Metaphysics, Metaphilosophy, etc.), Psychology
+* 2. Religion, Theology, Scripture
+* 3. Social Sciences (Law, Politics, Economics, Sociology, Education, Gender & LGBTQ+ Studies, etc.), Military affairs
+* 4. - Default, General menus/indexes/directories/aggragator lists to internet resources, Misc., Unclassed media/software
+* 5. Mathematics, Natural Science
+* 6. Applied Science, Medicine, General Technology, Engineering
+* 7. Arts (Photography, Culinary, Painting, Fashion, Beauty, performance, etc.), Entertainment (Music, Gaming Videos, Fictional Movies and Animation and TV Shows, etc.), Sport, Fitness
+* 8. Linguistics, Literature, Literary Criticism, Memoirs, Personal Blogs/gemlogs/scroll-logs, Book/Movie/Video reviews
+* 9. Geography, History, Biography
+
+When a document is unclassed, it should use class 4, meaning the status code should be 24.
+
+Non-entertainment media (usually non-fiction) should be placed in their correct category, even if they are video or audio. For example, a Theology Documentary should be placed in class 2.
+
+Media or documentation *about* software should be in class 0, whereas software (binaries, zips, packages, internet apps) itself should be based on the topic that software covers. Document readers, browsers, chat or social media, etc. should be placed in class 4, along with any other software that doesn't fit in any of the other classes.
+
+Computer Science (class 0) includes information *about* computer architecture, hardware, software, human-computer interaction, AI, etc.
+
+## Metadata Request
+
+Must be in UTF-8. A metadata request puts a "+" at the beginning of the language list:
+```
+<URI><space>+<LanguageList><CRLF>
+```
+
+## Success Metadata Response
+
+Response header (including the metadata information) *and the abstract* must be in UTF-8. The response format is:
+```
+20<space><Mimetype><CRLF>
+<Author><CRLF>
+<PublishDate><CRLF>
+<ModificationDate><CRLF>
+<Abstract>
+```
+
+The mimetype, author, publish date, and modification date are of the file, not of the abstract. The Author can be the user that created the file, the Author metadata from within the file (if supported in its data format), or the Author metadata specified elsewhere on the server.
+The Abstract is scrolltext that briefly describes the resource. The abstract should always include a level-1 heading of the title of the resource, but other text is optional. It may or may not be in one of the requested languages.
+
+## Error and Input Metadata Response
+
+When metadata is requested from a URL that gives back an error or Input, the same error/input response is given back:
+```
+<Status><space><Description><CRLF>
+```
+
+## Client Behavior
+
+The behaviors that are expected of a client are listed below:
+* Clients should not make automatic requests without a user interaction or an intentionally set user option. Metadata/Abstract requests are the only exception.
+* When input is requested, the input should never be concatenated with the current URI's query string. Rather, the input overwrites the current query string in the new request.
+* Query parameters and URI parameters should never be used.
+* The end of a file or stream occurs when the server closes the connection. A client could optionally detect an orphaned connection by checking the last time since bytes were received on the connection and prompting the user.
+
+### Streaming
+
+Scroll explicitly allows for streaming text and binary data by allowing clients to deal with data as it comes in. While this is best practice, it is completely optional, and might be handled differently depending on the content type of the response body.
+
+It is highly recommended that for all clients that support playing audio and video, all streamable audio and video contenttypes are played as they come it rather than waiting for the full file to download before playing. This could be done by playing directly or by piping the file data to another application.
+
+## Titan
+
+All clients and servers should ideally support the Titan protocol.
+
+=> gemini://transjovian.org/titan Titan Protocol
+
+## TLS and SNI
+
+TLS 1.2 and above is required for all servers. Server certificates should have *all* domain names in the SAN. The Common Name can be the primary/default domain name.
+Clients should try to use TLS 1.3. TOFU is used, similarly to Gemini. All clients must send the requested hostname via SNI. Servers may choose to read the hostname from SNI if they wish, but it is not required.
+
+## Client Certs
+
+Client certificates may also be used. The USER_ID field of the certificate should *always* be interpreted as the user's desired username, unless empty. Note that it could have spaces.
+
+If the USER_ID, CommonName, and SAN fields are provided, then the certificate should be interpreted as a misfin certificate and can be used by the server to send misfin messages to the user's misfin mailbox.
+
+=> gemini://misfin.org
+
+## Security.txt and Robots.txt
+
+A robots.txt may be used to specify which links a bot may crawl. The user-agents to use are similar to the ones specified by gemini's robots.txt spec. Crawl-delays *are* allowed in robots.txt so that crawlers may know the rate-limiting *before* it occurs. Security.txt may also be provided for security information.
+
+## BCP47 Language Tags
+
+BCP47 Language Tags consist of a primary tag with a optional subtags appended with a hyphen. Ex: "en" vs. "en-US". Subtags usually specify a variant of a language, a script, a region, or an extension.
+The syntax of a language tag as specified by RFC 5646 is the following: language ['-' script] ['-' region] *('-' variant) *('-' extension) ['-' privateuse]
+Common Language tags: "en" for English, "fr" for French, "de-CH" for Swiss German, "zh-Hans-CN" for Chinese, Simplified Script, as used in Mainland China
+
+=> https://www.rfc-editor.org/rfc/rfc5646.txt RFC 5646
+
+## Tor and i2p
+
+Scroll servers may be hosted on Tor or i2p, however, they must still use TLS and self-signed certs with the onion/i2p addresses in the SAN field.

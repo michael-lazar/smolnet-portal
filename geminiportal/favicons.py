@@ -6,8 +6,8 @@ import tempfile
 import time
 from typing import cast
 
+from geminiportal.errors import BaseProxyError
 from geminiportal.protocols import build_proxy_request
-from geminiportal.protocols.base import ProxyError
 from geminiportal.urls import URLReference
 from geminiportal.utils import smart_decode
 
@@ -61,7 +61,7 @@ class FaviconCache:
         favicon = None
         try:
             favicon = await self._fetch_favicon(favicon_url)
-        except ProxyError:
+        except BaseProxyError:
             _logger.warning("Error fetching favicon")
 
         _logger.info(f"Favicon for {favicon_url}: {favicon}")
@@ -74,7 +74,7 @@ class FaviconCache:
         request = build_proxy_request(favicon_url)
         response = await request.get_response()
         if response.status.startswith("2") and response.meta.startswith("text/plain"):
-            body = await response.get_body()
+            body = await response.get_body(truncate=True)
             favicon, _ = smart_decode(body, response.charset)
             favicon = favicon.strip()
             if len(favicon) <= 8:  # Emojis can contain up to 8 code points

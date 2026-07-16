@@ -15,9 +15,9 @@ from quart import (
 from quart.logging import default_handler
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
+from geminiportal.errors import BaseProxyError, InvalidRequestError
 from geminiportal.favicons import favicon_cache
 from geminiportal.protocols import build_proxy_request
-from geminiportal.protocols.base import ProxyError
 from geminiportal.urls import URLReference, quote_gopher
 from geminiportal.utils import ProxyOptions
 
@@ -34,14 +34,16 @@ app.config.from_prefixed_env()
 
 @app.errorhandler(ValueError)
 async def handle_value_error(e) -> Response:
-    content = await render_template("proxy/gateway-error.html", error=e)
-    return Response(content, status=400)
+    return await handle_proxy_error(InvalidRequestError(e))
 
 
-@app.errorhandler(ProxyError)
-async def handle_proxy_error(e):
-    content = await render_template("proxy/gateway-error.html", error=e)
-    return Response(content, status=500)
+@app.errorhandler(BaseProxyError)
+async def handle_proxy_error(e) -> Response:
+    # If a response was received, don't render its details on the error page
+    g.pop("response", None)
+
+    content = await render_template("proxy/portal-error.html", error=e)
+    return Response(content, status=e.http_status)
 
 
 @app.context_processor
@@ -229,6 +231,4 @@ async def proxy(
 
 
 if __name__ == "__main__":
-    app.config["DEBUG"] = True
-    app.config["SERVER_NAME"] = "localhost:8000"
-    app.run()
+    app.run(port=8000, debug=True)
