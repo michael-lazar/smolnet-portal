@@ -25,24 +25,27 @@ bug reports are always welcome!
 git clone https://github.com/michael-lazar/smolnet-portal
 cd smolnet-portal/
 
-# Initialize a virtual environment and install pip dependencies, etc.
-tools/boostrap
+# Initialize a virtual environment and install dependencies, etc.
+# (requires uv, https://docs.astral.sh/uv/)
+tools/bootstrap
 
 # Initialize pre-commit hooks
-pre-commit install
+uv run pre-commit install
 
 # Launch the dev server
 tools/quart --debug run -p 8000
 
 # Run the tests, linters, etc.
 tools/mypy
+tools/ruff check
+tools/ruff format
 
 tools/pytest
 tools/pytest --run-integration
 
-# Rebuild requirements
-tools/pip-compile
-tools/pip-install
+# Add/upgrade dependencies
+uv add <package>
+uv lock --upgrade
 ```
 
 ## License

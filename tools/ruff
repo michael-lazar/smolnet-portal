@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-uv run pytest "$@"
+uv run ruff "$@"

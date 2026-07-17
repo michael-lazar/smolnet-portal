@@ -143,7 +143,7 @@ async def old_scheme(scheme: str) -> Response | WerkzeugResponse:
     return app.redirect("/", 301)
 
 
-def set_captcha_cookie(response: Response) -> Response:
+def set_captcha_cookie(response: Response | WerkzeugResponse) -> Response | WerkzeugResponse:
     # Set all cookies to expire on Jan 1st to reduce the possibility of
     # tracking users based on their unique cookie expiration timestamp.
     now = datetime.now()

@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-
-set -o errexit
-set -o pipefail
-set -o nounset
-
-source venv/bin/activate
-pip-compile --allow-unsafe requirements/requirements.in --output-file requirements/requirements.txt "$@"
-pip-compile --allow-unsafe requirements/requirements-dev.in --output-file requirements/requirements-dev.txt "$@"

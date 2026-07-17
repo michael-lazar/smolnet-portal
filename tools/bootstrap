@@ -4,13 +4,10 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-python3.10 -m venv venv
-source venv/bin/activate
-
-python -m pip install -r requirements/requirements-dev.txt
+uv sync
 
 # Initialize the sqlite database
-python -m geminiportal.db
+uv run python -m geminiportal.db
 
 echo "Bootstrap completed!"
 echo "To launch the server, run:"

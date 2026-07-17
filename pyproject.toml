@@ -1,7 +1,70 @@
-[tool.black]
-line-length = 100
+[project]
+name = "gemini-portal"
+version = "2.0.0"
+description = "The code powering https://portal.mozz.us"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "aiosqlite",
+    "chardet",
+    "emoji",
+    "gunicorn",
+    "quart",
+    "sqlalchemy[asyncio]",
+    "uvicorn[standard]",
+]
+
+[project.urls]
+Homepage = "https://github.com/michael-lazar/smolnet-portal"
+
+[dependency-groups]
+dev = [
+    "mypy",
+    "pre-commit",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pytest-socket",
+    "ruff",
+]
+
+[tool.uv]
+package = false
+
+[tool.mypy]
+files = ["geminiportal"]
+python_version = "3.10"
+check_untyped_defs = true
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+exclude = ".*tests/"
 
 [tool.pytest.ini_options]
 addopts = "-v"
 python_files = ["tests.py", "test_*.py"]
 asyncio_mode = "auto"
+
+[tool.coverage.run]
+include = ["geminiportal/*"]
+omit = ["*migrations*", "*tests*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle
+    "F", # pyflakes
+    "I", # isort
+    "PT", # flake8-pytest-style
+    "C4", # flake8-comprehensions
+    "ISC", # flake8-implicit-str-concat
+    "TID", # flake8-tidy-imports
+    "UP", # pyupgrade
+]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"

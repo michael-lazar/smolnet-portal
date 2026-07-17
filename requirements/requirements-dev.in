@@ -1,7 +1,0 @@
--r requirements.txt
-mypy
-pip-tools
-pytest
-pytest-asyncio
-pytest-cov
-pytest-socket

@@ -57,7 +57,7 @@ class StreamHandler(BaseHandler):
 
     async def render(self) -> Response:
         content_type = self.get_content_type()
-        return Response(self.content_iter, content_type=content_type)  # type: ignore
+        return Response(self.content_iter, content_type=content_type)
 
     def get_content_type(self) -> str:
         """

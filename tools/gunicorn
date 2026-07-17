@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
-
-set -o errexit
-set -o pipefail
-set -o nounset
-
-source venv/bin/activate
-python -m gunicorn geminiportal.app:app \
+uv run gunicorn geminiportal.app:app \
     --worker-class uvicorn.workers.UvicornWorker \
     --keep-alive 0 \
     "$@"

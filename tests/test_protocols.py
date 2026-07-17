@@ -64,7 +64,7 @@ def test_build_proxy_request_nex():
 
 def test_build_proxy_request_missing_host():
     url = URLReference("mozz.us")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Unsupported URL scheme"):
         build_proxy_request(url)
 
 

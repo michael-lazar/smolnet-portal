@@ -1,7 +1,0 @@
-aiosqlite
-chardet
-emoji
-gunicorn
-quart
-sqlalchemy[asyncio]
-uvicorn[standard]

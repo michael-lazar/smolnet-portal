@@ -35,7 +35,7 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(skip_integration)
 
 
-@pytest.fixture()
+@pytest.fixture
 def app():
     _app.config["DEBUG"] = True
     _app.config["TESTING"] = True
@@ -43,17 +43,17 @@ def app():
     return _app
 
 
-@pytest.fixture()
+@pytest.fixture
 def client(app):
     return app.test_client()
 
 
-@pytest.fixture()
+@pytest.fixture
 def runner(app):
     return app.test_cli_runner()
 
 
-@pytest.fixture()
+@pytest.fixture
 async def session_factory():
     # An in-memory database is used for testing, sqlalchemy will maintain
     # a single connection to it that's shared between all of the sessions.
