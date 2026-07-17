@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+sqlite3 "${DATABASE_PATH:-data/gemini-portal.sqlite}" "$@"

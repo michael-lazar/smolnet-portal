@@ -1,6 +1,4 @@
 import asyncio
-import os
-import tempfile
 
 import pytest
 
@@ -8,36 +6,37 @@ from geminiportal.favicons import FaviconCache
 from geminiportal.urls import URLReference
 
 
-async def test_favicon_cache():
+async def test_favicon_cache(session_factory, monkeypatch):
     url = URLReference("gemini://mozz.us")
+    cache = FaviconCache(session_factory)
 
-    with tempfile.TemporaryDirectory() as tempdir:
-        db_name = os.path.join(tempdir, "db-file")
-        cache = FaviconCache(db_name)
+    # Keep the background fetch hanging, so the task is still
+    # running when the cache is checked for the second time.
+    async def fetch_forever(favicon_url):
+        await asyncio.Event().wait()
 
-        assert cache.check(url) is None
-        assert len(cache.tasks) == 1
+    monkeypatch.setattr(cache, "_fetch_favicon", fetch_forever)
 
-        assert cache.check(url) is None
-        assert len(cache.tasks) == 1
+    assert await cache.check(url) is None
+    assert len(cache.tasks) == 1
 
-        cache.shutdown()
+    assert await cache.check(url) is None
+    assert len(cache.tasks) == 1
+
+    cache.shutdown()
 
 
 @pytest.mark.integration
-async def test_favicon_cache_update():
+async def test_favicon_cache_update(session_factory):
     url = URLReference("gemini://mozz.us")
+    cache = FaviconCache(session_factory)
 
-    with tempfile.TemporaryDirectory() as tempdir:
-        db_name = os.path.join(tempdir, "db-file")
-        cache = FaviconCache(db_name)
+    assert await cache.check(url) is None
+    assert len(cache.tasks) == 1
 
-        assert cache.check(url) is None
-        assert len(cache.tasks) == 1
+    task = next(iter(cache.tasks.values()))
+    await asyncio.wait_for(task, 10)
+    assert await cache.check(url) == "🐟"
+    assert len(cache.tasks) == 0
 
-        task = next(iter(cache.tasks.values()))
-        await asyncio.wait_for(task, 10)
-        assert cache.check(url) == "🐟"
-        assert len(cache.tasks) == 0
-
-        cache.shutdown()
+    cache.shutdown()

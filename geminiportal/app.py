@@ -15,6 +15,7 @@ from quart import (
 from quart.logging import default_handler
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
+from geminiportal import db
 from geminiportal.errors import BaseProxyError, InvalidRequestError
 from geminiportal.favicons import favicon_cache
 from geminiportal.protocols import build_proxy_request
@@ -30,6 +31,17 @@ app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.keep_trailing_newline = True
 app.config.from_prefixed_env()
+
+
+@app.before_serving
+async def startup() -> None:
+    await db.run_migrations()
+
+
+@app.after_serving
+async def shutdown() -> None:
+    favicon_cache.shutdown()
+    await db.engine.dispose()
 
 
 @app.errorhandler(ValueError)
@@ -224,7 +236,7 @@ async def proxy(
 
     g.response = response
     g.options = options
-    g.favicon = favicon_cache.check(g.url)
+    g.favicon = await favicon_cache.check(g.url)
 
     proxy_response = await response.build_proxy_response()
     return proxy_response

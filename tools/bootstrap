@@ -9,6 +9,9 @@ source venv/bin/activate
 
 python -m pip install -r requirements/requirements-dev.txt
 
+# Initialize the sqlite database
+python -m geminiportal.db
+
 echo "Bootstrap completed!"
 echo "To launch the server, run:"
 echo "tools/quart run"

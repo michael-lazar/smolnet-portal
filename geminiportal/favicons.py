@@ -1,12 +1,13 @@
 import asyncio
 import logging
-import os
-import shelve
-import tempfile
-import time
-from typing import cast
+from datetime import datetime, timedelta
 
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
+from geminiportal import db
 from geminiportal.errors import BaseProxyError
+from geminiportal.models import Favicon
 from geminiportal.protocols import build_proxy_request
 from geminiportal.urls import URLReference
 from geminiportal.utils import smart_decode
@@ -14,36 +15,36 @@ from geminiportal.utils import smart_decode
 _logger = logging.getLogger(__name__)
 
 
-DB_NAME = os.path.join(tempfile.gettempdir(), "gemini-portal-favicon-db")
-
-
 class FaviconCache:
     """
     Download favicon.txt files from sites in the background, and
-    stash the results in a temporary directory on the filesystem
-    using the shelve module.
+    stash the results in the sqlite database.
     """
 
     FAVICON_PATH = "/favicon.txt"
-    EXPIRATION = 60 * 60 * 4
+    EXPIRATION = timedelta(hours=4)
 
-    def __init__(self, db_name: str):
-        self.db_name = db_name
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession] | None = None):
+        self.session_factory = session_factory or db.session_factory
 
         # References to coroutines that are currently fetching favicons
         self.tasks: dict[str, asyncio.Task] = {}
 
-    def check(self, url: URLReference) -> str | None:
+    async def check(self, url: URLReference) -> str | None:
         if url.scheme not in ("gemini", "spartan"):
             return None
 
         favicon_url = url.join(self.FAVICON_PATH)
         key = favicon_url.get_url()
-        with shelve.open(self.db_name) as db:
-            if key in db:
-                ttl, value = cast(tuple[float, str], db[key])
-                if time.time() < ttl:
-                    return value
+        async with self.session_factory() as session:
+            favicon = await session.scalar(
+                select(Favicon).where(
+                    Favicon.url == key,
+                    Favicon.expires_at > datetime.utcnow(),
+                )
+            )
+            if favicon is not None:
+                return favicon.emoji
 
         # Schedule a background task to download and save the favicon
         # Only make one request per-domain at a time to avoid spamming
@@ -58,17 +59,23 @@ class FaviconCache:
             task.cancel()
 
     async def _update(self, favicon_url: URLReference) -> None:
-        favicon = None
+        emoji = None
         try:
-            favicon = await self._fetch_favicon(favicon_url)
+            emoji = await self._fetch_favicon(favicon_url)
         except BaseProxyError:
             _logger.warning("Error fetching favicon")
 
-        _logger.info(f"Favicon for {favicon_url}: {favicon}")
-        with shelve.open(self.db_name) as db:
-            key = favicon_url.get_url()
-            ttl = time.time() + self.EXPIRATION
-            db[key] = ttl, favicon
+        _logger.info(f"Favicon for {favicon_url}: {emoji}")
+        key = favicon_url.get_url()
+        async with self.session_factory() as session:
+            favicon = await session.scalar(select(Favicon).where(Favicon.url == key))
+            if favicon is None:
+                favicon = Favicon(url=key)
+                session.add(favicon)
+
+            favicon.emoji = emoji
+            favicon.expires_at = datetime.utcnow() + self.EXPIRATION
+            await session.commit()
 
     async def _fetch_favicon(self, favicon_url: URLReference) -> str | None:
         request = build_proxy_request(favicon_url)
@@ -83,4 +90,4 @@ class FaviconCache:
         return None
 
 
-favicon_cache = FaviconCache(DB_NAME)
+favicon_cache = FaviconCache()

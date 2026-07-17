@@ -1,7 +1,9 @@
 import pytest
 from pytest_socket import disable_socket
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from geminiportal.app import app as _app
+from geminiportal.models import Base
 
 
 def pytest_addoption(parser):
@@ -49,3 +51,16 @@ def client(app):
 @pytest.fixture()
 def runner(app):
     return app.test_cli_runner()
+
+
+@pytest.fixture()
+async def session_factory():
+    # An in-memory database is used for testing, sqlalchemy will maintain
+    # a single connection to it that's shared between all of the sessions.
+    engine = create_async_engine("sqlite+aiosqlite://")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    yield async_sessionmaker(engine, expire_on_commit=False)
+
+    await engine.dispose()

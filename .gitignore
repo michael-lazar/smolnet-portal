@@ -160,3 +160,7 @@ cython_debug/
 .idea/
 
 .DS_Store
+
+# Application data (sqlite database)
+/data/*
+!/data/.gitkeep
