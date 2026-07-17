@@ -6,22 +6,31 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
     - name: Check out repository
-      uses: actions/checkout@v4
-    - name: Install python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+      uses: actions/checkout@v7
     - name: Install uv
-      uses: astral-sh/setup-uv@v6
-    - name: Run pre-commit checks
-      uses: pre-commit/action@v3.0.1
+      uses: astral-sh/setup-uv@v8.3.2
     - name: Run bootstrap
       run: tools/bootstrap
+    - name: Cache pre-commit environments
+      uses: actions/cache@v6
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+    - name: Run pre-commit checks
+      run: uv run pre-commit run --all-files --show-diff-on-failure
     - name: Run mypy
       run: tools/mypy
     - name: Run pytest
