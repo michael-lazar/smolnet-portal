@@ -10,7 +10,7 @@ class BaseProxyError(Exception):
     http_status: ClassVar[int]
     title: ClassVar[str]
     # Keep the tone of the explanations consistent with the parallel
-    # line in templates/proxy/server-error.html.
+    # line in templates/proxy/error-response.html.
     explanation: ClassVar[str]
 
     @property

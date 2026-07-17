@@ -73,7 +73,7 @@ class SpartanProxyResponseBuilder(BaseProxyResponseBuilder):
 
         elif self.response.status.startswith(("4", "5")):
             content = await render_template(
-                "proxy/server-error.html",
+                "proxy/error-response.html",
                 error=self.response.status_display,
                 message=self.response.meta,
             )
