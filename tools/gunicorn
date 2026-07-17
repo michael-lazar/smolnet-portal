@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-uv run gunicorn geminiportal.app:app \
+exec uv run --no-dev gunicorn geminiportal.app:app \
     --worker-class uvicorn.workers.UvicornWorker \
     --keep-alive 0 \
     "$@"
