@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -40,7 +40,7 @@ class FaviconCache:
             favicon = await session.scalar(
                 select(Favicon).where(
                     Favicon.url == key,
-                    Favicon.expires_at > datetime.utcnow(),
+                    Favicon.expires_at > datetime.now(UTC).replace(tzinfo=None),
                 )
             )
             if favicon is not None:
@@ -74,7 +74,7 @@ class FaviconCache:
                 session.add(favicon)
 
             favicon.emoji = emoji
-            favicon.expires_at = datetime.utcnow() + self.EXPIRATION
+            favicon.expires_at = datetime.now(UTC).replace(tzinfo=None) + self.EXPIRATION
             await session.commit()
 
     async def _fetch_favicon(self, favicon_url: URLReference) -> str | None:

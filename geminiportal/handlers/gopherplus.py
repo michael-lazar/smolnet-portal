@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Any, TypeAlias
+from typing import Any
 
 from geminiportal.handlers.base import TemplateHandler
 from geminiportal.handlers.gopher import GopherItem
 from geminiportal.urls import quote_gopher
 
-GopherPlusAttributeData: TypeAlias = dict[str, Any]
-GopherPlusAttributeMap: TypeAlias = dict[str, GopherPlusAttributeData]
+type GopherPlusAttributeData = dict[str, Any]
+type GopherPlusAttributeMap = dict[str, GopherPlusAttributeData]
 
 
 class GopherPlusHandler(TemplateHandler):

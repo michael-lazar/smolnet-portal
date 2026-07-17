@@ -132,7 +132,7 @@ class BaseRequest:
         future = asyncio.open_connection(self.host, self.port, **kwargs)
         try:
             reader, writer = await asyncio.wait_for(future, timeout=CONNECT_TIMEOUT)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             raise UpstreamTimeoutError(
                 f'The server at "{self.host}" did not accept the connection '
                 f"after {CONNECT_TIMEOUT} seconds."

@@ -1,6 +1,6 @@
 import logging
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from urllib.parse import quote
 
 from quart import (
@@ -107,7 +107,7 @@ async def robots() -> Response:
 
 @app.route("/about")
 async def about() -> Response:
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     content = await render_template("about.html", year=now.year)
     return Response(content)
 

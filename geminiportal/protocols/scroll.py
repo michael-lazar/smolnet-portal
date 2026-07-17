@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import ssl
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from quart import Response as QuartResponse
 from quart import render_template
@@ -48,7 +48,7 @@ class ScrollRequest(BaseRequest):
                 # https://github.com/python/cpython/issues/80010
                 if date_str.endswith("Z"):
                     date_str = date_str[:-1]
-                    return datetime.fromisoformat(date_str).replace(tzinfo=timezone.utc)
+                    return datetime.fromisoformat(date_str).replace(tzinfo=UTC)
 
         return None
 
