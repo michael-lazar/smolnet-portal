@@ -227,7 +227,11 @@ class ScrollProxyResponseBuilder(BaseProxyResponseBuilder):
             return QuartResponse(content)
 
         elif self.response.status.startswith("6"):
-            content = await render_template("proxy/gemini-cert-required.html")
+            content = await render_template(
+                "proxy/gemini-cert-required.html",
+                error=self.response.status_display,
+                message=self.response.meta,
+            )
             return QuartResponse(content)
 
         else:

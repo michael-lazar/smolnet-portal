@@ -7,6 +7,7 @@ requires-python = ">=3.13"
 dependencies = [
     "aiosqlite",
     "chardet",
+    "cryptography",
     "emoji",
     "gunicorn",
     "quart",

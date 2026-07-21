@@ -22,7 +22,7 @@ from geminiportal.errors import BaseProxyError, InvalidRequestError
 from geminiportal.favicons import favicon_cache
 from geminiportal.protocols import build_proxy_request
 from geminiportal.protocols.base import supports_client_cert
-from geminiportal.tls import describe_tls_cert
+from geminiportal.tls import parse_tls_cert
 from geminiportal.urls import URLReference, quote_gopher
 from geminiportal.utils import HTTPResponse, ProxyOptions
 
@@ -74,12 +74,13 @@ def inject_context():
 
     kwargs["trap_url"] = url_for("trap", token=uuid.uuid4().hex)
 
-    current_path = request.full_path.rstrip("?")
-    if g.get("session") is None:
-        kwargs["login_url"] = url_for("login", next=current_path)
+    session = g.get("session")
+    kwargs["session"] = session
+
+    if session is None:
+        kwargs["login_url"] = url_for("login", next=request.full_path)
     else:
         kwargs["profile_url"] = url_for("profile")
-        kwargs["logout_url"] = url_for("logout", next=current_path)
 
     if "response" in g:
         kwargs["response"] = g.response
@@ -110,7 +111,7 @@ def inject_context():
                 "scheme": g.url.scheme,
                 "hostname": g.url.hostname,
                 "port": g.url.port,
-                "next": current_path,
+                "next": request.full_path,
             }
             if g.cert_active:
                 kwargs["cert_deactivate_url"] = url_for("cert_deactivate", **cert_params)
@@ -194,50 +195,58 @@ def login_required(
     return wrapper
 
 
+def post_required(
+    func: Callable[..., Awaitable[HTTPResponse]],
+) -> Callable[..., Awaitable[HTTPResponse]]:
+    """
+    Reject non-POST requests with a 405; the catch-all proxy route would
+    otherwise swallow these URLs instead of returning a proper error.
+    """
+
+    @wraps(func)
+    async def wrapper(*args: Any, **kwargs: Any) -> HTTPResponse:
+        if request.method != "POST":
+            return Response(status=405, headers={"Allow": "POST"})
+        return await func(*args, **kwargs)
+
+    return wrapper
+
+
 @app.route("/auth/login", methods=["GET", "POST"])
 async def login() -> HTTPResponse:
     next_arg = request.args.get("next")
     form_action = url_for("login", next=next_arg) if next_arg else url_for("login")
 
-    if request.method == "POST":
-        try:
-            cert_pem, key_pem = await auth.read_keypair_upload()
-        except auth.CertValidationError as e:
-            content = await render_template(
-                "auth/login.html", error=str(e), form_action=form_action
-            )
-            return Response(content, status=400)
+    if request.method == "GET":
+        content = await render_template("login.html", error=None, form_action=form_action)
+        return Response(content)
 
-        if g.session is not None:
-            # Re-login replaces the stored session
-            await sessions.delete_session(g.session)
-        g.session = await sessions.create_session(cert_pem, key_pem)
+    try:
+        cert_pem, key_pem = await auth.read_keypair_upload()
+    except auth.CertValidationError as e:
+        content = await render_template("login.html", error=str(e), form_action=form_action)
+        return Response(content, status=400)
 
-        cert_description = await describe_tls_cert(cert_pem.encode(), inform="PEM")
-        content = await render_template(
-            "auth/logged-in.html",
-            next_url=clean_next_url(next_arg),
-            cert_description=cert_description,
-        )
-        response = Response(content)
-        sessions.set_session_cookie(response, g.session.token)
-        return response
+    if g.session is not None:
+        # Re-login replaces the stored session
+        await sessions.delete_session(g.session)
 
-    content = await render_template("auth/login.html", error=None, form_action=form_action)
-    return Response(content)
+    cert_info = parse_tls_cert(cert_pem.encode())
+    g.session = await sessions.create_session(cert_pem, key_pem, cert_info)
+
+    response = app.redirect(clean_next_url(next_arg), 303)
+    sessions.set_session_cookie(response, g.session.token)
+    return response
 
 
-@app.route("/auth/logout", methods=["POST"])
+@app.route("/auth/logout", methods=["GET", "POST"])
+@post_required
 async def logout() -> HTTPResponse:
     if g.session is not None:
         await sessions.delete_session(g.session)
         g.session = None
 
-    content = await render_template(
-        "auth/logged-out.html",
-        next_url=clean_next_url(request.args.get("next")),
-    )
-    response = Response(content)
+    response = app.redirect(clean_next_url(request.args.get("next")), 303)
     sessions.delete_session_cookie(response)
     return response
 
@@ -245,8 +254,6 @@ async def logout() -> HTTPResponse:
 @app.route("/auth/profile")
 @login_required
 async def profile() -> HTTPResponse:
-    cert_description = await describe_tls_cert(g.session.cert_pem.encode(), inform="PEM")
-
     activations = []
     for activation in await auth.list_activations(g.session):
         url = URLReference(f"{activation.scheme}://{activation.hostname}:{activation.port}")
@@ -264,11 +271,7 @@ async def profile() -> HTTPResponse:
             }
         )
 
-    content = await render_template(
-        "auth/profile.html",
-        cert_description=cert_description,
-        activations=activations,
-    )
+    content = await render_template("profile.html", activations=activations)
     return Response(content)
 
 
@@ -319,13 +322,15 @@ async def update_cert_activation(activate: bool) -> HTTPResponse:
     return app.redirect(clean_next_url(next_url), 303)
 
 
-@app.route("/auth/certificate/activate")
+@app.route("/auth/certificate/activate", methods=["GET", "POST"])
+@post_required
 @login_required
 async def cert_activate() -> HTTPResponse:
     return await update_cert_activation(activate=True)
 
 
-@app.route("/auth/certificate/deactivate")
+@app.route("/auth/certificate/deactivate", methods=["GET", "POST"])
+@post_required
 @login_required
 async def cert_deactivate() -> HTTPResponse:
     return await update_cert_activation(activate=False)

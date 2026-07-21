@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block body %}
+<h2>Profile</h2>
+<p>You are logged in with a TLS client certificate.</p>
+<p>
+  <a href="{{ url_for('cert_download') }}">Download identity (certificate + private key)</a>
+</p>
+
+<h3>Active hosts</h3>
+{% if activations %}
+<ul class="activation-list">
+  {% for activation in activations %}
+  <li>
+    <a href="{{ activation.proxy_url }}">{{ activation.display }}</a>
+    <form class="link-form" method="post" action="{{ activation.deactivate_url }}">
+      <button class="link-button" type="submit">[deactivate]</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>
+  Your certificate is not activated for any hosts - use the
+  <b>[activate]</b> link when browsing a capsule.
+</p>
+{% endif %}
+
+<h3>Your certificate</h3>
+<table class="cert-table">
+  <tr><th>Common&nbsp;name</th><td>{{ session.cert_common_name or "(unnamed)" }}</td></tr>
+  <tr><th>Subject</th><td>{{ session.cert_subject }}</td></tr>
+  <tr><th>Issuer</th><td>{{ session.cert_issuer }}</td></tr>
+  <tr><th>Valid&nbsp;from</th><td>{{ session.cert_not_valid_before }} UTC</td></tr>
+  <tr><th>Valid&nbsp;until</th><td>{{ session.cert_not_valid_after }} UTC</td></tr>
+  <tr><th>Fingerprint</th><td>SHA-256:{{ session.cert_fingerprint }}</td></tr>
+</table>
+
+<form class="logout-form" method="post" action="{{ url_for('logout') }}">
+  <button class="link-button" type="submit">Logout</button>
+</form>
+{% endblock %}

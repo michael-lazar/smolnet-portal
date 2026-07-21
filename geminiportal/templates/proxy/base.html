@@ -31,12 +31,26 @@ font-size=%2290%22&gt;{{ favicon }}&lt;/text&gt;&lt;/svg&gt;">
     {% if meta_url %}<a href="{{ meta_url }}" title="Fetch the metadata for the current page">[meta]</a>{% endif %}
     {% if vr_url %}<a href="{{ vr_url }}" title="View the current page in web VR (experimental)">[GopherVR]</a>{% endif %}
     {% if cert_url %}<a href="{{ cert_url }}" title="View the TLS certificate details for the request">[cert]</a>{% endif %}
-    {% if cert_activate_url %}<a href="{{ cert_activate_url }}" title="Send your TLS client certificate to this host">[activate&nbsp;client&nbsp;cert]</a>{% endif %}
-    {% if cert_deactivate_url %}<a href="{{ cert_deactivate_url }}" title="Stop sending your TLS client certificate to this host">[deactivate&nbsp;client&nbsp;cert]</a>{% endif %}
     {% if reader_url %}<a href="{{ reader_url }}" title="Enter visual reader mode">[reader]</a>{% endif %}
     {% if raw_url %}<a href="{{ raw_url }}" title="View the response as a raw data stream">[raw]</a>{% endif %}
   {% endif %}
 </div>
+{% if not reader and (cert_activate_url or cert_deactivate_url) %}
+<div class="cert-line">
+  {% set cert_name = " (%s)"|format(session.cert_common_name) if session.cert_common_name else "" %}
+  {% if cert_deactivate_url %}
+  🔒 Your client certificate{{ cert_name }} is being sent to this host
+  <form class="link-form" method="post" action="{{ cert_deactivate_url }}">
+    <button class="link-button" type="submit" title="Stop sending your TLS client certificate to this host">[deactivate]</button>
+  </form>
+  {% else %}
+  Your client certificate{{ cert_name }} is not being sent to this host
+  <form class="link-form" method="post" action="{{ cert_activate_url }}">
+    <button class="link-button" type="submit" title="Send your TLS client certificate to this host">[activate]</button>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
 
 <div class="content">
 {% block content %}{%- endblock %}

@@ -22,14 +22,8 @@
       <a class="header-item" href="/changes">changes</a>
     </span>
     <span class="navbar-auth">
-      {% if login_url %}
-      <a class="header-item" href="{{ login_url }}">login</a>
-      {% endif %}
       {% if profile_url %}
       <a class="header-item" href="{{ profile_url }}">profile</a>
-      <form class="logout-form" method="post" action="{{ logout_url }}">
-        <button class="link-button" type="submit">logout</button>
-      </form>
       {% endif %}
     </span>
   </div>

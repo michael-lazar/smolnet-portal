@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block body %}
+  <h2>Login</h2>
+  <p>
+    Login by uploading a TLS client certificate, sometimes called a
+    <em>gemini identity</em>. Your certificate and private key will be stored
+    on the portal server for the lifetime of your session, and will only be
+    sent to the hosts that you choose to activate them for.
+  </p>
+  {% if error %}
+    <p class="form-error" role="alert">{{ error }}</p>
+  {% endif %}
+  <form class="auth-form" method="post" action="{{ form_action }}" enctype="multipart/form-data">
+    <p>
+      <label for="cert">Certificate (.pem or .crt):</label><br>
+      <input type="file" id="cert" name="cert" accept=".pem,.crt" required>
+    </p>
+    <p>
+      <label for="key">Private key (.pem or .key):</label><br>
+      <input type="file" id="key" name="key" accept=".pem,.key"><br>
+      <em class="form-hint">Optional — leave this empty if your certificate file
+        already contains the private key (combined PEM file).</em>
+    </p>
+    <p>
+      <label>
+        <input type="checkbox" name="accept_risk" required>
+        I understand that my private key will be stored unencrypted on the
+        server, and I accept the risk.
+      </label>
+    </p>
+    <p><input type="submit" value="Login"></p>
+  </form>
+{% endblock %}

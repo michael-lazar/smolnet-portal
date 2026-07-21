@@ -116,6 +116,10 @@ async def read_keypair_upload() -> tuple[str, str]:
     if request.content_length and request.content_length > MAX_UPLOAD_SIZE:
         raise CertValidationError("The uploaded file is too large.")
 
+    form = await request.form
+    if not form.get("accept_risk"):
+        raise CertValidationError("You must accept the risk acknowledgement.")
+
     files = await request.files
 
     cert_file = files.get("cert")

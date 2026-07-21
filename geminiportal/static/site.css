@@ -122,6 +122,10 @@ details summary {
 }
 
 .logout-form {
+    margin-top: 1.5em;
+}
+
+.link-form {
     display: inline;
 }
 
@@ -135,8 +139,36 @@ details summary {
     cursor: pointer;
 }
 
+.cert-line {
+    font-size: smaller;
+}
+
+.cert-line .link-button {
+    text-decoration: none;
+}
+
+.cert-table {
+    border: 0;
+    border-collapse: collapse;
+    margin: 10px 20px;
+}
+
+.cert-table th {
+    text-align: left;
+    padding-right: 10px;
+    vertical-align: top;
+}
+
+.cert-table td {
+    padding: 5px;
+    word-break: break-all;
+}
+
 .form-error {
-    font-weight: bold;
+    border: 1px solid;
+    padding: 5px 10px;
+    max-width: fit-content;
+    color: #b02121;
 }
 
 .title {
@@ -374,5 +406,9 @@ iframe {
 
     .title {
         color: #6dcaff;
+    }
+
+    .form-error {
+        color: #ff8f8f;
     }
 }

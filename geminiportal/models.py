@@ -32,6 +32,12 @@ class Session(Base):
     token: Mapped[str] = mapped_column(unique=True)
     cert_pem: Mapped[str]
     key_pem: Mapped[str]
+    cert_common_name: Mapped[str | None]
+    cert_subject: Mapped[str]
+    cert_issuer: Mapped[str]
+    cert_not_valid_before: Mapped[datetime]
+    cert_not_valid_after: Mapped[datetime]
+    cert_fingerprint: Mapped[str]
     created_at: Mapped[datetime]
     expires_at: Mapped[datetime]
 

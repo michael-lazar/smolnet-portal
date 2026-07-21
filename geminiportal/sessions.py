@@ -8,6 +8,7 @@ from sqlalchemy import delete, select
 
 from geminiportal import db
 from geminiportal.models import Session
+from geminiportal.tls import CertInfo
 from geminiportal.utils import HTTPResponse, utcnow
 
 SESSION_COOKIE_NAME = "session_id"
@@ -62,7 +63,7 @@ async def load_session() -> Session | None:
     return session
 
 
-async def create_session(cert_pem: str, key_pem: str) -> Session:
+async def create_session(cert_pem: str, key_pem: str, cert_info: CertInfo) -> Session:
     """
     Store a new session, returning it with a freshly generated token.
     """
@@ -71,6 +72,12 @@ async def create_session(cert_pem: str, key_pem: str) -> Session:
         token=secrets.token_urlsafe(32),
         cert_pem=cert_pem,
         key_pem=key_pem,
+        cert_common_name=cert_info.common_name,
+        cert_subject=cert_info.subject,
+        cert_issuer=cert_info.issuer,
+        cert_not_valid_before=cert_info.not_valid_before,
+        cert_not_valid_after=cert_info.not_valid_after,
+        cert_fingerprint=cert_info.fingerprint,
         created_at=now,
         expires_at=now + SESSION_LIFETIME,
     )

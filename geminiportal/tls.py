@@ -5,8 +5,14 @@ import logging
 import ssl
 import subprocess
 import tempfile
+from datetime import datetime
 from functools import lru_cache
+from typing import NamedTuple
 from weakref import WeakKeyDictionary
+
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes
+from cryptography.x509.oid import NameOID
 
 _logger = logging.getLogger(__name__)
 
@@ -47,6 +53,40 @@ async def describe_tls_cert(tls_cert: bytes, inform: str = "DER") -> str:
     )
     stdout, stderr = await proc.communicate(tls_cert)
     return stdout.decode(errors="ignore")
+
+
+class CertInfo(NamedTuple):
+    """
+    The interesting X509 fields parsed out of a TLS certificate.
+    """
+
+    common_name: str | None
+    subject: str
+    issuer: str
+    not_valid_before: datetime
+    not_valid_after: datetime
+    fingerprint: str
+
+
+def parse_tls_cert(tls_cert: bytes) -> CertInfo:
+    """
+    Parse the X509 fields from the given PEM-encoded TLS certificate data.
+    """
+    cert = x509.load_pem_x509_certificate(tls_cert)
+
+    common_name = None
+    for attribute in cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME):
+        common_name = str(attribute.value)
+        break
+
+    return CertInfo(
+        common_name=common_name,
+        subject=cert.subject.rfc4514_string(),
+        issuer=cert.issuer.rfc4514_string(),
+        not_valid_before=cert.not_valid_before_utc.replace(tzinfo=None),
+        not_valid_after=cert.not_valid_after_utc.replace(tzinfo=None),
+        fingerprint=cert.fingerprint(hashes.SHA256()).hex(":").upper(),
+    )
 
 
 # Marks connections whose close_notify arrived before a CloseNotifyState

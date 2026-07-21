@@ -1,6 +1,17 @@
 {% extends "proxy/base.html" %}
 
 {% block content %}
-<h2>Certificate Required</h2>
-<p><i>This proxy does not support client certificates.</i></p>
+  <h2>Certificate Required</h2>
+  <p><i>This endpoint is requesting a TLS client certificate.</i></p>
+  {% if error %}
+    <blockquote><b>{{ error }}</b>{% if message %}<br>{{ message }}{% endif %}</blockquote>
+  {% endif %}
+  {% if login_url %}
+    <p><a href="{{ login_url }}">Login</a> with your certificate to continue.</p>
+  {% elif cert_activate_url %}
+    <form method="post" action="{{ cert_activate_url }}">
+      <button class="link-button" type="submit">Activate</button>
+      your certificate to send it to this host.
+    </form>
+  {% endif %}
 {% endblock %}
