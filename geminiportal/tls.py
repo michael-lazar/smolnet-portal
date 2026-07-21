@@ -85,7 +85,7 @@ def parse_tls_cert(tls_cert: bytes) -> CertInfo:
         issuer=cert.issuer.rfc4514_string(),
         not_valid_before=cert.not_valid_before_utc.replace(tzinfo=None),
         not_valid_after=cert.not_valid_after_utc.replace(tzinfo=None),
-        fingerprint=cert.fingerprint(hashes.SHA256()).hex(":").upper(),
+        fingerprint=cert.fingerprint(hashes.SHA256()).hex().upper(),
     )
 
 

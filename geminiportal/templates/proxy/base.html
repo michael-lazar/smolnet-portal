@@ -37,14 +37,13 @@ font-size=%2290%22&gt;{{ favicon }}&lt;/text&gt;&lt;/svg&gt;">
 </div>
 {% if not reader and (cert_activate_url or cert_deactivate_url) %}
 <div class="cert-line">
-  {% set cert_name = " (%s)"|format(session.cert_common_name) if session.cert_common_name else "" %}
   {% if cert_deactivate_url %}
-  🔒 Your client certificate{{ cert_name }} is being sent to this host
+  🔒 client certificate is active
   <form class="link-form" method="post" action="{{ cert_deactivate_url }}">
     <button class="link-button" type="submit" title="Stop sending your TLS client certificate to this host">[deactivate]</button>
   </form>
   {% else %}
-  Your client certificate{{ cert_name }} is not being sent to this host
+  client certificate is not active
   <form class="link-form" method="post" action="{{ cert_activate_url }}">
     <button class="link-button" type="submit" title="Send your TLS client certificate to this host">[activate]</button>
   </form>

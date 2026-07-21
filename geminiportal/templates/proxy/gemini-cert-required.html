@@ -7,11 +7,6 @@
     <blockquote><b>{{ error }}</b>{% if message %}<br>{{ message }}{% endif %}</blockquote>
   {% endif %}
   {% if login_url %}
-    <p><a href="{{ login_url }}">Login</a> with your certificate to continue.</p>
-  {% elif cert_activate_url %}
-    <form method="post" action="{{ cert_activate_url }}">
-      <button class="link-button" type="submit">Activate</button>
-      your certificate to send it to this host.
-    </form>
+    <p>You can <a href="{{ login_url }}">login</a> to access this resource through the smolnet portal.</p>
   {% endif %}
 {% endblock %}

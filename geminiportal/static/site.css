@@ -121,10 +121,6 @@ details summary {
     padding-right: 0;
 }
 
-.logout-form {
-    margin-top: 1.5em;
-}
-
 .link-form {
     display: inline;
 }
@@ -156,7 +152,6 @@ details summary {
 .cert-table th {
     text-align: left;
     padding-right: 10px;
-    vertical-align: top;
 }
 
 .cert-table td {

@@ -3,30 +3,44 @@
 {% block body %}
   <h2>Login</h2>
   <p>
-    Login by uploading a TLS client certificate, sometimes called a
-    <em>gemini identity</em>. Your certificate and private key will be stored
-    on the portal server for the lifetime of your session, and will only be
-    sent to the hosts that you choose to activate them for.
+    You can upload a self-signed TLS client certificate in order to make authenticated
+    requests to <em>gemini://</em> servers. Your certificate and private key will be stored
+    on the portal server for the lifetime of your session, and will only be sent to hosts
+    that you choose to activate them for.
   </p>
-  {% if error %}
-    <p class="form-error" role="alert">{{ error }}</p>
-  {% endif %}
-  <form class="auth-form" method="post" action="{{ form_action }}" enctype="multipart/form-data">
-    <p>
-      <label for="cert">Certificate (.pem or .crt):</label><br>
-      <input type="file" id="cert" name="cert" accept=".pem,.crt" required>
-    </p>
-    <p>
-      <label for="key">Private key (.pem or .key):</label><br>
-      <input type="file" id="key" name="key" accept=".pem,.key"><br>
-      <em class="form-hint">Optional — leave this empty if your certificate file
-        already contains the private key (combined PEM file).</em>
-    </p>
+  <p>
+    This feature is intended for testing and other low-stakes use-cases. Your certificate will
+    be stored unencrypted on the server. I will not use, copy, or share it under any circumstances.
+  </p>
+  <details>
+    <summary>Don't have a certificate? You can generate one with <code>openssl</code></summary>
+    <pre>
+  openssl req -x509 -newkey rsa:2048 -sha256 -days 36500 -nodes \
+      -keyout portal-user.key -out portal-user.crt -subj "/CN=portal-user"</pre>
+  </details>
+  <br>
+  <form method="post" action="{{ form_action }}" enctype="multipart/form-data">
+    <fieldset>
+      <legend>Client identity</legend>
+      {% if error %}
+        <div class="form-error" role="alert">{{ error }}</div>
+      {% endif %}
+      <div>
+        <label for="cert">Certificate file:</label><br>
+        <input type="file" id="cert" name="cert" accept=".pem,.crt" required>
+      </div>
+      <div>
+        <label for="key">Private key file:</label><br>
+        <input type="file" id="key" name="key" accept=".pem,.key"><br>
+        <em>Optional - leave this empty if your certificate file
+          already contains the private key (combined PEM file).</em>
+      </div>
+    </fieldset>
     <p>
       <label>
         <input type="checkbox" name="accept_risk" required>
         I understand that my private key will be stored unencrypted on the
-        server, and I accept the risk.
+        server, and I accept this risk.
       </label>
     </p>
     <p><input type="submit" value="Login"></p>

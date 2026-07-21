@@ -4,7 +4,7 @@ from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from functools import wraps
 from typing import Any
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 
 from quart import (
     Quart,
@@ -179,6 +179,31 @@ def clean_next_url(next_url: str | None) -> str:
     return "/"
 
 
+def parse_proxy_path_origin(path: str) -> auth.Origin | None:
+    """
+    Extract the origin from a portal proxy path like "/gemini/host/...",
+    returning None if the path doesn't point to an origin that a client
+    certificate can be activated for.
+    """
+    parts = urlsplit(path).path.split("/")
+    if len(parts) < 3:
+        return None
+
+    scheme, netloc = parts[1], parts[2]
+    if not supports_client_cert(scheme):
+        return None
+
+    try:
+        url = URLReference(f"{scheme}://{netloc}")
+    except ValueError:
+        return None
+
+    if not url.hostname or not url.port:
+        return None
+
+    return auth.Origin(url.scheme, url.hostname, url.port)
+
+
 def login_required(
     func: Callable[..., Awaitable[HTTPResponse]],
 ) -> Callable[..., Awaitable[HTTPResponse]]:
@@ -189,7 +214,7 @@ def login_required(
     @wraps(func)
     async def wrapper(*args: Any, **kwargs: Any) -> HTTPResponse:
         if g.session is None:
-            return app.redirect(url_for("login", next=request.full_path.rstrip("?")), 303)
+            return app.redirect(url_for("login", next=request.full_path), 303)
         return await func(*args, **kwargs)
 
     return wrapper
@@ -234,7 +259,16 @@ async def login() -> HTTPResponse:
     cert_info = parse_tls_cert(cert_pem.encode())
     g.session = await sessions.create_session(cert_pem, key_pem, cert_info)
 
-    response = app.redirect(clean_next_url(next_arg), 303)
+    next_url = clean_next_url(next_arg)
+
+    # When the login page was reached from a capsule, activate the new
+    # certificate for that origin so landing there doesn't require a
+    # second [activate] click
+    origin = parse_proxy_path_origin(next_url)
+    if origin is not None:
+        await auth.activate_cert(g.session, origin)
+
+    response = app.redirect(next_url, 303)
     sessions.set_session_cookie(response, g.session.token)
     return response
 
