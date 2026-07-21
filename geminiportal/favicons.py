@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -10,7 +10,7 @@ from geminiportal.errors import BaseProxyError
 from geminiportal.models import Favicon
 from geminiportal.protocols import build_proxy_request
 from geminiportal.urls import URLReference
-from geminiportal.utils import smart_decode
+from geminiportal.utils import smart_decode, utcnow
 
 _logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class FaviconCache:
             favicon = await session.scalar(
                 select(Favicon).where(
                     Favicon.url == key,
-                    Favicon.expires_at > datetime.now(UTC).replace(tzinfo=None),
+                    Favicon.expires_at > utcnow(),
                 )
             )
             if favicon is not None:
@@ -74,7 +74,7 @@ class FaviconCache:
                 session.add(favicon)
 
             favicon.emoji = emoji
-            favicon.expires_at = datetime.now(UTC).replace(tzinfo=None) + self.EXPIRATION
+            favicon.expires_at = utcnow() + self.EXPIRATION
             await session.commit()
 
     async def _fetch_favicon(self, favicon_url: URLReference) -> str | None:

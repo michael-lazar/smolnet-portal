@@ -1,6 +1,7 @@
 import asyncio
 import subprocess
 from collections.abc import AsyncIterator
+from datetime import UTC, datetime
 from typing import NamedTuple
 
 import chardet
@@ -18,6 +19,14 @@ class ProxyOptions(NamedTuple):
     crt: bool = False
     meta: bool = False
     reader: bool = False
+
+
+def utcnow() -> datetime:
+    """
+    The current time as a naive UTC datetime, the convention used for
+    all timestamps stored in the database.
+    """
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 async def describe_tls_cert(tls_cert: bytes) -> str:
