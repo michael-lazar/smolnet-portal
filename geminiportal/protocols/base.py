@@ -9,17 +9,18 @@ from asyncio.exceptions import IncompleteReadError
 from collections.abc import AsyncIterator
 
 from quart import Response as QuartResponse
-from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from geminiportal.errors import (
+    InvalidRequestError,
     RequestBlockedError,
     UpstreamConnectionError,
     UpstreamTimeoutError,
 )
 from geminiportal.handlers import get_handler_class
 from geminiportal.handlers.base import BaseHandler, StreamHandler
+from geminiportal.tls import get_ssl_context
 from geminiportal.urls import URLReference
-from geminiportal.utils import ProxyOptions
+from geminiportal.utils import HTTPResponse, ProxyOptions
 
 _logger = logging.getLogger(__name__)
 
@@ -55,6 +56,14 @@ ALLOWED_PORTS = {
 
 # Time waiting to establish a connection before aborting
 CONNECT_TIMEOUT = 10
+
+
+def supports_client_cert(scheme: str) -> bool:
+    """
+    Whether the proxied scheme can authenticate with a TLS client
+    certificate.
+    """
+    return scheme in ("gemini", "gophers", "scroll")
 
 
 class ResponseSizeExceeded(Exception):
@@ -100,9 +109,7 @@ class BaseRequest:
         try:
             response = await self.fetch()
         except socket.gaierror:
-            raise UpstreamConnectionError(
-                f'The hostname "{self.host}" could not be resolved.',
-            )
+            raise UpstreamConnectionError(f'The hostname "{self.host}" could not be resolved.')
         except ConnectionRefusedError:
             raise UpstreamConnectionError(
                 f'The server at "{self.host}" refused the connection on port {self.port}.'
@@ -143,6 +150,20 @@ class BaseRequest:
             self.peer_address = peername[0]
 
         return reader, writer
+
+    def create_ssl_context(self) -> ssl.SSLContext:
+        """
+        Build the SSL context for the request, attaching the user's TLS
+        client certificate when one has been activated for the host.
+        """
+        try:
+            return get_ssl_context(self.options.client_crt)
+        except ssl.SSLError as e:
+            raise InvalidRequestError(
+                "The TLS context for the request could not be created. "
+                "If you have activated a client certificate for this host, "
+                "try logging out and logging back in."
+            ) from e
 
     async def fetch(self) -> BaseResponse:
         raise NotImplementedError
@@ -261,7 +282,7 @@ class BaseResponse:
         finally:
             self.close()
 
-    async def build_proxy_response(self) -> QuartResponse | WerkzeugResponse:
+    async def build_proxy_response(self) -> HTTPResponse:
         """
         Render the native response from the remote server as an HTTP response.
         """
@@ -295,27 +316,5 @@ class BaseProxyResponseBuilder:
 
         return response
 
-    async def build_proxy_response(self) -> QuartResponse | WerkzeugResponse:
+    async def build_proxy_response(self) -> HTTPResponse:
         raise NotImplementedError
-
-
-class CloseNotifyState:
-    """
-    Inject into the SSL context to register if the TLS close_notify signal
-    was received at the end of the connection.
-    """
-
-    def __init__(self, context: ssl.SSLContext):
-        self.received: bool = False
-
-        def msg_callback(connection, direction, v, c, m, data):
-            if m == ssl._TLSAlertType.CLOSE_NOTIFY:  # type: ignore  # noqa
-                if direction == "read":
-                    _logger.info("CLOSE_NOTIFY received")
-                    self.received = True
-
-        # This is a private debugging hook provided by the SSL library
-        context._msg_callback = msg_callback  # type: ignore
-
-    def __bool__(self) -> bool:
-        return self.received

@@ -19,7 +19,7 @@ session_factory = async_sessionmaker(engine, expire_on_commit=False)
 
 
 @event.listens_for(engine.sync_engine, "connect")
-def _set_sqlite_pragmas(dbapi_connection, connection_record) -> None:
+def set_sqlite_pragmas(dbapi_connection, connection_record) -> None:
     # SQLite ships with extremely conservative defaults, and sqlalchemy
     # doesn't override any of them. These need to be applied per-connection
     # (except journal_mode, which is persistent in the database file).
@@ -53,6 +53,30 @@ MIGRATIONS = [
         expires_at DATETIME NOT NULL,
         PRIMARY KEY (id),
         UNIQUE (url)
+    )
+    """,
+    """
+    CREATE TABLE sessions (
+        id INTEGER NOT NULL,
+        token VARCHAR NOT NULL,
+        cert_pem VARCHAR NOT NULL,
+        key_pem VARCHAR NOT NULL,
+        created_at DATETIME NOT NULL,
+        expires_at DATETIME NOT NULL,
+        PRIMARY KEY (id),
+        UNIQUE (token)
+    )
+    """,
+    """
+    CREATE TABLE cert_activations (
+        id INTEGER NOT NULL,
+        session_id INTEGER NOT NULL,
+        scheme VARCHAR NOT NULL,
+        hostname VARCHAR NOT NULL,
+        port INTEGER NOT NULL,
+        PRIMARY KEY (id),
+        UNIQUE (session_id, scheme, hostname, port),
+        FOREIGN KEY(session_id) REFERENCES sessions (id) ON DELETE CASCADE
     )
     """,
 ]

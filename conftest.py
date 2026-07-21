@@ -1,8 +1,10 @@
 import pytest
 from pytest_socket import disable_socket
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from geminiportal.app import app as _app
+from geminiportal.db import set_sqlite_pragmas
 from geminiportal.models import Base
 
 
@@ -58,6 +60,7 @@ async def session_factory():
     # An in-memory database is used for testing, sqlalchemy will maintain
     # a single connection to it that's shared between all of the sessions.
     engine = create_async_engine("sqlite+aiosqlite://")
+    event.listens_for(engine.sync_engine, "connect")(set_sqlite_pragmas)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 

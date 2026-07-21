@@ -68,3 +68,7 @@ select = [
 
 [tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
+
+[tool.pyrefly]
+python-version = "3.13"
+python-interpreter = ".venv/bin/python"

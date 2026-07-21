@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import ssl
 
 from quart import Response as QuartResponse
 from quart import render_template
@@ -12,9 +11,8 @@ from geminiportal.protocols.base import (
     BaseProxyResponseBuilder,
     BaseRequest,
     BaseResponse,
-    CloseNotifyState,
 )
-from geminiportal.utils import describe_tls_cert
+from geminiportal.tls import CloseNotifyState, describe_tls_cert
 
 _logger = logging.getLogger(__name__)
 
@@ -24,18 +22,12 @@ class GeminiRequest(BaseRequest):
     Encapsulates a gemini:// request.
     """
 
-    def create_ssl_context(self) -> ssl.SSLContext:
-        context = ssl.create_default_context()
-        context.check_hostname = False
-        context.verify_mode = ssl.CERT_NONE
-        return context
-
     async def fetch(self) -> GeminiResponse:
         context = self.create_ssl_context()
-        tls_close_notify = CloseNotifyState(context)
-
         reader, writer = await self.open_connection(ssl=context)
+
         ssock = writer.get_extra_info("ssl_object")
+        tls_close_notify = CloseNotifyState(ssock)
 
         tls_cert = ssock.getpeercert(True)
         tls_version = ssock.version()

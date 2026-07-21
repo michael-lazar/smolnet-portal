@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import ssl
-
 from quart import Response as QuartResponse
 from quart import render_template
 
@@ -22,7 +20,7 @@ class GopherRequest(BaseRequest):
 
     async def fetch(self) -> GopherResponse | GopherPlusResponse:
         if self.url.scheme == "gophers":
-            context = self.make_ssl_context()
+            context = self.create_ssl_context()
         else:
             context = None
 
@@ -64,12 +62,6 @@ class GopherRequest(BaseRequest):
             meta=meta,
             data_length=data_length,
         )
-
-    def make_ssl_context(self) -> ssl.SSLContext:
-        context = ssl.create_default_context()
-        context.check_hostname = False
-        context.verify_mode = ssl.CERT_NONE
-        return context
 
 
 class GopherResponse(BaseResponse):

@@ -1,6 +1,9 @@
 import logging
 import uuid
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
+from functools import wraps
+from typing import Any
 from urllib.parse import quote
 
 from quart import (
@@ -13,14 +16,15 @@ from quart import (
     url_for,
 )
 from quart.logging import default_handler
-from werkzeug.wrappers.response import Response as WerkzeugResponse
 
-from geminiportal import db
+from geminiportal import auth, db, sessions
 from geminiportal.errors import BaseProxyError, InvalidRequestError
 from geminiportal.favicons import favicon_cache
 from geminiportal.protocols import build_proxy_request
+from geminiportal.protocols.base import supports_client_cert
+from geminiportal.tls import describe_tls_cert
 from geminiportal.urls import URLReference, quote_gopher
-from geminiportal.utils import ProxyOptions
+from geminiportal.utils import HTTPResponse, ProxyOptions
 
 logger = logging.getLogger("geminiportal")
 logger.setLevel(logging.INFO)
@@ -36,6 +40,12 @@ app.config.from_prefixed_env()
 @app.before_serving
 async def startup() -> None:
     await db.run_migrations()
+    await sessions.purge_expired_sessions()
+
+
+@app.before_request
+async def load_current_session() -> None:
+    g.session = await sessions.load_session()
 
 
 @app.after_serving
@@ -60,9 +70,16 @@ async def handle_proxy_error(e) -> Response:
 
 @app.context_processor
 def inject_context():
-    kwargs = {}
+    kwargs: dict[str, Any] = {}
 
     kwargs["trap_url"] = url_for("trap", token=uuid.uuid4().hex)
+
+    current_path = request.full_path.rstrip("?")
+    if g.get("session") is None:
+        kwargs["login_url"] = url_for("login", next=current_path)
+    else:
+        kwargs["profile_url"] = url_for("profile")
+        kwargs["logout_url"] = url_for("logout", next=current_path)
 
     if "response" in g:
         kwargs["response"] = g.response
@@ -87,6 +104,18 @@ def inject_context():
 
         if "response" in g and g.response.url.scheme == "scroll":
             kwargs["meta_url"] = g.url.get_proxy_url(meta=1)
+
+        if "cert_active" in g:
+            cert_params = {
+                "scheme": g.url.scheme,
+                "hostname": g.url.hostname,
+                "port": g.url.port,
+                "next": current_path,
+            }
+            if g.cert_active:
+                kwargs["cert_deactivate_url"] = url_for("cert_deactivate", **cert_params)
+            else:
+                kwargs["cert_activate_url"] = url_for("cert_activate", **cert_params)
 
     elif "address" in g:
         kwargs["url"] = g.address
@@ -119,14 +148,14 @@ async def changes() -> Response:
 
 
 @app.route("/trap/<token>", endpoint="trap")
-async def trap(token: str) -> Response | WerkzeugResponse:
+async def trap(token: str) -> HTTPResponse:
     # Note: this endpoint doesn't actually do anything, I have a fail2ban rule setup
     # that watches the logs for requests to the path /trap/* and adds them to a ban list.
     return Response("Your IP Address has been banned 🧑‍⚖️.", status=404)
 
 
 @app.route("/")
-async def home() -> Response | WerkzeugResponse:
+async def home() -> HTTPResponse:
     g.address = request.args.get("url")
     if g.address:
         # URL was provided via the address bar, redirect to the canonical endpoint
@@ -138,12 +167,176 @@ async def home() -> Response | WerkzeugResponse:
     return Response(content)
 
 
+def clean_next_url(next_url: str | None) -> str:
+    """
+    Only allow redirects to relative paths within the portal, so the
+    "next" param can't be used as an open redirect.
+    """
+    if next_url and next_url.startswith("/") and not next_url.startswith("//"):
+        if "\\" not in next_url:
+            return next_url
+    return "/"
+
+
+def login_required(
+    func: Callable[..., Awaitable[HTTPResponse]],
+) -> Callable[..., Awaitable[HTTPResponse]]:
+    """
+    Redirect to the login page when the request has no active session.
+    """
+
+    @wraps(func)
+    async def wrapper(*args: Any, **kwargs: Any) -> HTTPResponse:
+        if g.session is None:
+            return app.redirect(url_for("login", next=request.full_path.rstrip("?")), 303)
+        return await func(*args, **kwargs)
+
+    return wrapper
+
+
+@app.route("/auth/login", methods=["GET", "POST"])
+async def login() -> HTTPResponse:
+    next_arg = request.args.get("next")
+    form_action = url_for("login", next=next_arg) if next_arg else url_for("login")
+
+    if request.method == "POST":
+        try:
+            cert_pem, key_pem = await auth.read_keypair_upload()
+        except auth.CertValidationError as e:
+            content = await render_template(
+                "auth/login.html", error=str(e), form_action=form_action
+            )
+            return Response(content, status=400)
+
+        if g.session is not None:
+            # Re-login replaces the stored session
+            await sessions.delete_session(g.session)
+        g.session = await sessions.create_session(cert_pem, key_pem)
+
+        cert_description = await describe_tls_cert(cert_pem.encode(), inform="PEM")
+        content = await render_template(
+            "auth/logged-in.html",
+            next_url=clean_next_url(next_arg),
+            cert_description=cert_description,
+        )
+        response = Response(content)
+        sessions.set_session_cookie(response, g.session.token)
+        return response
+
+    content = await render_template("auth/login.html", error=None, form_action=form_action)
+    return Response(content)
+
+
+@app.route("/auth/logout", methods=["POST"])
+async def logout() -> HTTPResponse:
+    if g.session is not None:
+        await sessions.delete_session(g.session)
+        g.session = None
+
+    content = await render_template(
+        "auth/logged-out.html",
+        next_url=clean_next_url(request.args.get("next")),
+    )
+    response = Response(content)
+    sessions.delete_session_cookie(response)
+    return response
+
+
+@app.route("/auth/profile")
+@login_required
+async def profile() -> HTTPResponse:
+    cert_description = await describe_tls_cert(g.session.cert_pem.encode(), inform="PEM")
+
+    activations = []
+    for activation in await auth.list_activations(g.session):
+        url = URLReference(f"{activation.scheme}://{activation.hostname}:{activation.port}")
+        activations.append(
+            {
+                "display": url.get_url(),
+                "proxy_url": url.get_proxy_url(external=False),
+                "deactivate_url": url_for(
+                    "cert_deactivate",
+                    scheme=activation.scheme,
+                    hostname=activation.hostname,
+                    port=activation.port,
+                    next=url_for("profile"),
+                ),
+            }
+        )
+
+    content = await render_template(
+        "auth/profile.html",
+        cert_description=cert_description,
+        activations=activations,
+    )
+    return Response(content)
+
+
+@app.route("/auth/certificate/download")
+@login_required
+async def cert_download() -> HTTPResponse:
+    # The combined PEM format round-trips through the login form
+    return Response(
+        g.session.identity_pem,
+        content_type="application/x-pem-file",
+        headers={"Content-Disposition": "attachment; filename=identity.pem"},
+    )
+
+
+def parse_cert_activation_params() -> auth.Origin:
+    scheme = request.args.get("scheme", "")
+    if not supports_client_cert(scheme):
+        raise ValueError(f'"{scheme}" is not a scheme that supports client certificates')
+
+    hostname = (request.args.get("hostname") or "").strip().lower()
+    if not hostname:
+        raise ValueError("A hostname is required")
+
+    port_str = request.args.get("port")
+    if port_str:
+        port = int(port_str)
+        if not 1 <= port <= 65535:
+            raise ValueError(f"Invalid port: {port}")
+    else:
+        port = URLReference.DEFAULT_PORTS[scheme]
+
+    return auth.Origin(scheme, hostname, port)
+
+
+async def update_cert_activation(activate: bool) -> HTTPResponse:
+    origin = parse_cert_activation_params()
+
+    if activate:
+        await auth.activate_cert(g.session, origin)
+    else:
+        await auth.deactivate_cert(g.session, origin)
+
+    next_url = request.args.get("next")
+    if not next_url:
+        url = URLReference(f"{origin.scheme}://{origin.hostname}:{origin.port}")
+        next_url = url.get_proxy_url(external=False)
+
+    return app.redirect(clean_next_url(next_url), 303)
+
+
+@app.route("/auth/certificate/activate")
+@login_required
+async def cert_activate() -> HTTPResponse:
+    return await update_cert_activation(activate=True)
+
+
+@app.route("/auth/certificate/deactivate")
+@login_required
+async def cert_deactivate() -> HTTPResponse:
+    return await update_cert_activation(activate=False)
+
+
 @app.route("/<scheme>", strict_slashes=False)
-async def old_scheme(scheme: str) -> Response | WerkzeugResponse:
+async def old_scheme(scheme: str) -> HTTPResponse:
     return app.redirect("/", 301)
 
 
-def set_captcha_cookie(response: Response | WerkzeugResponse) -> Response | WerkzeugResponse:
+def set_captcha_cookie(response: HTTPResponse) -> HTTPResponse:
     # Set all cookies to expire on Jan 1st to reduce the possibility of
     # tracking users based on their unique cookie expiration timestamp.
     now = datetime.now()
@@ -152,7 +345,7 @@ def set_captcha_cookie(response: Response | WerkzeugResponse) -> Response | Werk
     return response
 
 
-async def check_captcha(options: ProxyOptions) -> Response | WerkzeugResponse | None:
+async def check_captcha(options: ProxyOptions) -> HTTPResponse | None:
     if request.method == "POST":
         form = await request.form
         if form.get("captcha"):
@@ -188,7 +381,7 @@ async def check_captcha(options: ProxyOptions) -> Response | WerkzeugResponse | 
 @app.route("/<scheme>/<netloc>/<path:path>", endpoint="proxy-path", methods=["GET", "POST"])
 async def proxy(
     scheme: str = "gemini", netloc: str | None = None, path: str | None = None
-) -> Response | WerkzeugResponse:
+) -> HTTPResponse:
     """
     The main entrypoint for the web proxy.
     """
@@ -216,6 +409,13 @@ async def proxy(
         proxy_url = g.url.get_proxy_url(external=False)
         return app.redirect(proxy_url)
 
+    client_crt = None
+    if g.session and supports_client_cert(g.url.scheme) and g.url.hostname and g.url.port:
+        origin = auth.Origin(g.url.scheme, g.url.hostname, g.url.port)
+        g.cert_active = await auth.is_cert_activated(g.session, origin)
+        if g.cert_active:
+            client_crt = g.session.identity_pem
+
     options = ProxyOptions(
         charset=request.args.get("charset") or None,
         lang=request.args.get("lang") or None,
@@ -225,6 +425,7 @@ async def proxy(
         crt=bool(request.args.get("crt")),
         meta=bool(request.args.get("meta")),
         reader=bool(request.args.get("reader")),
+        client_crt=client_crt,
     )
 
     captcha_response = await check_captcha(options)

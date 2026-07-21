@@ -101,9 +101,42 @@ details summary {
     margin-bottom: 1em;
 }
 
+.header-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+}
+
 .header-item {
     padding-right: 0.4em;
     text-decoration: underline;
+}
+
+.navbar-auth {
+    margin-left: auto;
+    padding-left: 0.4em;
+}
+
+.navbar-auth .header-item:last-child {
+    padding-right: 0;
+}
+
+.logout-form {
+    display: inline;
+}
+
+.link-button {
+    border: none;
+    padding: 0;
+    background: none;
+    font: inherit;
+    color: LinkText;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.form-error {
+    font-weight: bold;
 }
 
 .title {

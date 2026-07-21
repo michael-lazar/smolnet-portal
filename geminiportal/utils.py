@@ -1,13 +1,16 @@
-import asyncio
-import subprocess
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from typing import NamedTuple
 
 import chardet
 from emoji import is_emoji
+from quart import Response
+from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from geminiportal.urls import URLReference
+
+# An HTTP response from either quart or werkzeug (e.g. a redirect)
+type HTTPResponse = Response | WerkzeugResponse
 
 
 class ProxyOptions(NamedTuple):
@@ -19,6 +22,7 @@ class ProxyOptions(NamedTuple):
     crt: bool = False
     meta: bool = False
     reader: bool = False
+    client_crt: str | None = None
 
 
 def utcnow() -> datetime:
@@ -29,23 +33,10 @@ def utcnow() -> datetime:
     return datetime.now(UTC).replace(tzinfo=None)
 
 
-async def describe_tls_cert(tls_cert: bytes) -> str:
-    """
-    Use openssl to print details about the given TLS certificate data.
-    """
-    proc = await asyncio.create_subprocess_exec(
-        *["openssl", "x509", "-inform", "DER", "-text"],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    stdout, stderr = await proc.communicate(tls_cert)
-    return stdout.decode(errors="ignore")
-
-
 async def prepend_bytes_to_iterator(
     partial_bytes: bytes, content_iter: AsyncIterator[bytes]
 ) -> AsyncIterator[bytes]:
+
     yield partial_bytes
 
     async for chunk in content_iter:

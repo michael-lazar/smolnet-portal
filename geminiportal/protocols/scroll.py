@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import ssl
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
@@ -14,9 +13,8 @@ from geminiportal.protocols.base import (
     BaseProxyResponseBuilder,
     BaseRequest,
     BaseResponse,
-    CloseNotifyState,
 )
-from geminiportal.utils import describe_tls_cert
+from geminiportal.tls import CloseNotifyState, describe_tls_cert
 
 _logger = logging.getLogger(__name__)
 
@@ -32,12 +30,6 @@ class ScrollRequest(BaseRequest):
     """
     Encapsulates a scroll:// request.
     """
-
-    def create_ssl_context(self) -> ssl.SSLContext:
-        context = ssl.create_default_context()
-        context.check_hostname = False
-        context.verify_mode = ssl.CERT_NONE
-        return context
 
     def parse_date(self, line: bytes) -> datetime | None:
         if date_str := line.decode("utf-8").rstrip():
@@ -60,10 +52,10 @@ class ScrollRequest(BaseRequest):
 
     async def fetch(self) -> ScrollResponse:
         context = self.create_ssl_context()
-        tls_close_notify = CloseNotifyState(context)
-
         reader, writer = await self.open_connection(ssl=context)
+
         ssock = writer.get_extra_info("ssl_object")
+        tls_close_notify = CloseNotifyState(ssock)
 
         tls_cert = ssock.getpeercert(True)
         tls_version = ssock.version()

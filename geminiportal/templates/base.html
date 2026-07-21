@@ -14,12 +14,25 @@
 <body>
 {% block header %}
 <div class="header">
-  <a class="title" href="/">SMOLNET PORTAL</a>
-  <span class="navbar">
+  <div class="header-line">
+    <a class="title" href="/">SMOLNET PORTAL</a>
+    <span class="navbar">
       <a class="header-item" href="/">home</a>
       <a class="header-item" href="/about">about</a>
       <a class="header-item" href="/changes">changes</a>
     </span>
+    <span class="navbar-auth">
+      {% if login_url %}
+      <a class="header-item" href="{{ login_url }}">login</a>
+      {% endif %}
+      {% if profile_url %}
+      <a class="header-item" href="{{ profile_url }}">profile</a>
+      <form class="logout-form" method="post" action="{{ logout_url }}">
+        <button class="link-button" type="submit">logout</button>
+      </form>
+      {% endif %}
+    </span>
+  </div>
   <hr>
 </div>
 {% endblock %}
