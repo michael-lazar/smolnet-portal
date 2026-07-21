@@ -105,20 +105,21 @@ details summary {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
+    column-gap: 0.4em;
 }
 
 .header-item {
-    padding-right: 0.4em;
     text-decoration: underline;
+}
+
+.navbar,
+.navbar-auth {
+    display: flex;
+    column-gap: 0.4em;
 }
 
 .navbar-auth {
     margin-left: auto;
-    padding-left: 0.4em;
-}
-
-.navbar-auth .header-item:last-child {
-    padding-right: 0;
 }
 
 .link-form {
@@ -172,7 +173,6 @@ details summary {
     font-size: 1.2em;
     font-family: sans-serif;
     text-decoration: none;
-    padding-right: 0.4em;
 }
 
 .body {
