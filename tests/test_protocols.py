@@ -7,6 +7,7 @@ from geminiportal.protocols import (
     GopherRequest,
     NexRequest,
     SpartanRequest,
+    TitanRequest,
     TxtRequest,
     build_proxy_request,
 )
@@ -20,6 +21,33 @@ def test_build_proxy_request_gemini():
     assert isinstance(request, GeminiRequest)
     assert request.port == 1965
     assert request.host == "mozz.us"
+
+
+def test_build_proxy_request_titan():
+    url = URLReference("titan://mozz.us/hello;mime=text/plain;size=10")
+    request = build_proxy_request(url)
+    assert isinstance(request, TitanRequest)
+    assert request.port == 1965
+    assert request.host == "mozz.us"
+
+
+def test_titan_request_data():
+    url = URLReference("titan://mozz.us/hello")
+    request = build_proxy_request(url)
+    assert isinstance(request, TitanRequest)
+
+    request.set_upload(b"hello world", "text/plain", "secret")
+    assert request.get_request_data() == (
+        b"titan://mozz.us/hello;size=11;mime=text/plain;token=secret\r\nhello world"
+    )
+
+
+def test_titan_request_data_empty():
+    # A zero-byte upload, which titan servers may treat as a delete request
+    url = URLReference("titan://mozz.us/hello")
+    request = build_proxy_request(url)
+    assert isinstance(request, TitanRequest)
+    assert request.get_request_data() == b"titan://mozz.us/hello;size=0\r\n"
 
 
 def test_build_proxy_request_spartan():

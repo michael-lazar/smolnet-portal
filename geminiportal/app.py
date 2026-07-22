@@ -21,7 +21,8 @@ from geminiportal import auth, db, sessions
 from geminiportal.errors import BaseProxyError, InvalidRequestError
 from geminiportal.favicons import favicon_cache
 from geminiportal.protocols import build_proxy_request
-from geminiportal.protocols.base import supports_client_cert
+from geminiportal.protocols.base import cert_origin_scheme, supports_client_cert
+from geminiportal.protocols.titan import TitanRequest
 from geminiportal.tls import parse_tls_cert
 from geminiportal.urls import URLReference, quote_gopher
 from geminiportal.utils import HTTPResponse, ProxyOptions
@@ -108,7 +109,7 @@ def inject_context():
 
         if "cert_active" in g:
             cert_params = {
-                "scheme": g.url.scheme,
+                "scheme": cert_origin_scheme(g.url.scheme),
                 "hostname": g.url.hostname,
                 "port": g.url.port,
                 "next": request.full_path,
@@ -201,7 +202,7 @@ def parse_proxy_path_origin(path: str) -> auth.Origin | None:
     if not url.hostname or not url.port:
         return None
 
-    return auth.Origin(url.scheme, url.hostname, url.port)
+    return auth.Origin(cert_origin_scheme(url.scheme), url.hostname, url.port)
 
 
 def login_required(
@@ -390,7 +391,9 @@ async def check_captcha(options: ProxyOptions) -> HTTPResponse | None:
         if form.get("captcha"):
             after_this_request(set_captcha_cookie)
             return app.redirect(request.full_path, code=303)
-        else:
+        elif g.url.scheme != "titan":
+            # The only other form that posts to the proxy endpoint is the
+            # titan upload form.
             return Response(status=400)
 
     if options.raw or options.raw_crt:
@@ -414,6 +417,32 @@ async def check_captcha(options: ProxyOptions) -> HTTPResponse | None:
 
     content = await render_template("proxy/captcha.html")
     return Response(content)
+
+
+async def read_titan_upload() -> tuple[bytes, str | None, str | None]:
+    """
+    Extract the upload content and parameters from the titan upload form.
+    """
+    form = await request.form
+    files = await request.files
+
+    token = form.get("token") or None
+    mime = form.get("mime") or None
+
+    file = files.get("file")
+    if file is not None and file.filename:
+        content = file.read()
+        if mime is None:
+            mime = file.mimetype or None
+    else:
+        # Browsers submit textarea content with CRLF line endings, normalize
+        # them to unix-style line endings before uploading.
+        text = form.get("content", "").replace("\r\n", "\n")
+        content = text.encode()
+        if mime is None:
+            mime = "text/gemini"
+
+    return content, mime, token
 
 
 @app.route("/<scheme>/<netloc>/", endpoint="proxy-netloc", methods=["GET", "POST"])
@@ -450,7 +479,7 @@ async def proxy(
 
     client_crt = None
     if g.session and supports_client_cert(g.url.scheme) and g.url.hostname and g.url.port:
-        origin = auth.Origin(g.url.scheme, g.url.hostname, g.url.port)
+        origin = auth.Origin(cert_origin_scheme(g.url.scheme), g.url.hostname, g.url.port)
         g.cert_active = await auth.is_cert_activated(g.session, origin)
         if g.cert_active:
             client_crt = g.session.identity_pem
@@ -472,6 +501,17 @@ async def proxy(
         return captcha_response
 
     proxy_request = build_proxy_request(g.url, options)
+
+    if isinstance(proxy_request, TitanRequest):
+        if request.method != "POST":
+            # Render the upload form, the titan request is only made after
+            # the form has been submitted.
+            content = await render_template("proxy/titan-upload.html")
+            return Response(content)
+
+        upload, mime, token = await read_titan_upload()
+        proxy_request.set_upload(upload, mime, token)
+
     response = await proxy_request.get_response()
 
     g.response = response

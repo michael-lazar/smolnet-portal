@@ -6,6 +6,7 @@ from geminiportal.protocols.nex import NexRequest
 from geminiportal.protocols.scroll import ScrollRequest
 from geminiportal.protocols.spartan import SpartanRequest
 from geminiportal.protocols.text import TxtRequest
+from geminiportal.protocols.titan import TitanRequest
 from geminiportal.urls import URLReference
 from geminiportal.utils import ProxyOptions
 
@@ -24,6 +25,8 @@ def build_proxy_request(url: URLReference, options: ProxyOptions | None = None) 
         request_class = FingerRequest
     elif url.scheme == "gemini":
         request_class = GeminiRequest
+    elif url.scheme == "titan":
+        request_class = TitanRequest
     elif url.scheme == "nex":
         request_class = NexRequest
     elif url.scheme == "gopher":

@@ -1,0 +1,144 @@
+# The Titan specification
+
+The Titan protocol is an add-on for Gemini clients and servers. It is used to upload data to servers, making external tools like ftp or other protocols like the web unnecessary.
+
+Client and server do the usual TLS handshake and then the client sends the Titan URL:
+
+```
+titan://transjovian.org/test/raw/testing;size=123;mime=plain/text;token=hello\r\n
+```
+
+That is, the target URL, followed by one, two, or three parameters:
+
+* a mandatory filesize in bytes so that the server knows when you’re done
+* an optional MIME type to identify what kind of data you are sending (the default is text/gemini)
+* an optional token to authenticate if the server allows anonymous uploads (on a wiki, for example)
+
+After the Titan URL and the carriage return and linefeed the client sends the data and the server replies with a regular Gemini status response.
+
+## The Titan URL
+
+It is expected that a resources that you can read using Gemini may be writeable using Titan. A regular Gemini URL points to a "resource" and you use your Gemini client to read it. A Titan URL uses the "titan" scheme instead of "gemini". If you point your Titan-enabled client at this Titan URL, you can edit that resource.
+
+A Titan URL uses extra parameters. Parameters are not query parameters! There is no question mark after the URL. Parameters are separated from the rest of the URL and each other using a semicolon and they come as key/value pairs. Here’s what the URL RFC says:
+
+> URI producing applications often use the reserved characters allowed in a segment to delimit scheme-specific or dereference-handler-specific subcomponents. For example, the semicolon (";") and equals ("=") reserved characters are often used to delimit parameters and parameter values applicable to that segment.
+> => https://tools.ietf.org/html/rfc3986 RFC 3986
+
+=> https://tools.ietf.org/html/rfc3986 https://tools.ietf.org/html/rfc3986
+
+Titan uses the following three parameters:
+
+* "token" for the answer to the security question (optional, but probably a good idea)
+* "mime" for the MIME-type you are going to upload (optional, defaults to "text/gemini")
+* "size" for the number of bytes you are going to upload (otherwise the server can’t tell whether when the upload is done)
+
+No other parameters are used. An interactive client following a Titan link or ending up at a Titan link following a redirect must ignore all existing parameters, query the user and make the Titan request using the one, two or three parameters provided by the user.
+
+Gemini example URLs:
+
+```
+gemini://example.org/page/Test
+gemini://example.org/raw/Test
+```
+
+Titan example URLs:
+
+```
+titan://example.org/raw/Test;token=hello;mime=plain/text;size=10
+titan://example.org/raw/Test;token=hello;mime=plain/text;size=10?username=Alex
+```
+
+Note how in the last example, additional information was provided via query parameters. If an interactive client ends up visiting “titan://example.org/raw/Test?username=Alex” for example, the parameters need to go between the path and the query parameters since they are specified only for the last path segment.
+
+## Why a token?
+
+Use the token when anonymous users can make changes on the server. If only known users can make changes, no token is required: use the features Gemini already provides, client certificates. - Authentication & Authorisation
+
+=> Authentication%20%26%20Authorisation Authentication & Authorisation
+
+## Why a MIME-type?
+
+The server needs to know the MIME-type when it serves the page in the future. When the server returns a code 20 status response it must include a MIME type. When uploading text or files, the same principle applies: specify the MIME type you’re uploading using this parameter.
+
+Sure, we could assume a list of well-known file name extensions and expect the URL to end in one, but that is very inflexible.
+
+Not all file extensions are known: is it `.jpg` or `.jpeg`? `.doc` or `.docx`? `.md` or `.markdown`?
+
+A file extension is not always used: do you allow a URL like “gemini://transjovian.org/test/testing”? If so, what is the MIME type you are assuming?
+
+If you’re a developer, you can call “file --mime-type --brief” on a file. Or you can do a quick and dirty mapping yourself:
+
+* .gmi → text/gemini
+* .txt, .text → text/plain
+* .md → text/markdown
+* .htm, .html → text/html
+* .png → image/png
+* .jpg, .jpeg → image/jpeg
+* .gif → image/gif
+* .mp3 → audio/mpeg
+* .pdf → application/pdf
+* .svg → image/svg+xml
+* otherwise → application/octet-stream
+
+For text the user typed, use text/gemini.
+
+If no MIME type is provided, the server should assume text/gemini.
+
+Note that a server may reject your upload if it restricts the MIME types it accepts, and it may ignore or translate MIME types it gets. It may accept text/plain and treat it as text/gemini, for example.
+
+## Why a size?
+
+When sending data over the Internet, it can arrive in chunks. If your connection is bad, chunks can be very small and there can be long pauses between them. Thus, a server is always wondering: is the upload finished? Did the client disconnect? If you implement a timeout, are you prepared to disallow long uploads from people with bad connections? This is hard to get right.
+
+If we send the size before sending the data, the server knows exactly how many bytes it must read. That doesn’t solve all the problems, but it’s a start. You might still have to implement a timeout on the server side, for example, because otherwise malicious people could start thousands of uploads that never send any actual data. Each of these connections wastes resources on your server. That’s not good.
+
+## Typical interaction between client and server
+
+Here’s how a simple file upload client (C) and server (S) interaction might look like:
+
+C: Opens connection eg. transjovian.org:1965
+
+S: Accepts connection
+
+C/S: Complete TLS handshake
+
+C: Validates server certificate
+
+C: Sends upload intent URL (one CRLF terminated line) (see “File Intent” below)
+
+S: If an error is detected, sends response header (one CRLF terminated line) and closes connection (see “Initial Response” below)
+
+C: Sends data
+
+S: Sends response header (one CRLF terminated line) (See “Confirmation” below)
+
+C: Handles response
+
+## Validation
+
+Once the server has the Titan URL, it might detect an error: the token is invalid, the size exceeds the internal limit, the filename doesn’t match the constraints, the MIME type is not allowed, a client certificate is required, and so on. In this case, the server responds with an error line and closes the socket, for example: “50 A token is required to upload a file\r\n”.
+
+The server should reject the upload if it exceeds the intended size. Uploading a lot more in order to fill up disk space or memory are common denial of service attacks.
+
+Client should check for a server response when the connection is closed.
+
+## Response
+
+When the client has sent the file data, the server completes the transaction with a regular Gemini response before closing the connection. It could simply report success: “20 text/gemini; charset=UTF-8\r\nUpload succeeded.\n”, or it could redirect to the updated resource: “30 titan://transjovian.org/test/testing\r\n”, or it could report an error: “50 Error writing file: some exception\r\n”. Any Gemini response is possible.
+
+## Redirects
+
+When the client edits a resource, it needs to view it first so that the user knows the original content. What to edit? A Gemini request is used to get this data using URL A. If this request results in a redirect to B, then that redirect is followed by another Gemini request. The Titan request must be made to that last Gemini URL in that redirect chain, i.e. B instead of A. Making a Titan request to a URL that would have resulted in a redirect using Gemini (URL A) is a mistake and ought to be reported as an error. If the server saves the file in such a way that it would be shown at the end of a chain of redirects (URL B), the the client is lucky. This is not mandated behaviour.
+
+## Creation
+
+When the client visits a resource that could conceivably be created it can just use Titan to attempt it. Ideally, the previous Gemini request returned a 20 SUCCESS status, possibly with zero bytes of content to show, or a message like “Edit this text”. No such response is mandated, how ever. The server might also answer with a status 51 NOT FOUND.
+
+## Deletion
+
+When the client wants to delete a resource, it uses the Titan protocol to send zero bytes of content (size=0).
+
+## Proposals
+
+=> Edit%20Link Edit link

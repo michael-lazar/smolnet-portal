@@ -187,6 +187,21 @@ details summary {
     max-width: 68ch;
 }
 
+.titan-form {
+    margin-top: 1em;
+}
+
+.titan-form fieldset {
+    margin-bottom: 1em;
+}
+
+.titan-form textarea {
+    font-family: monospace;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 80ch;
+}
+
 .title {
     font-weight: bolder;
     color: #3f51b5;

@@ -18,6 +18,7 @@ mimetypes.add_type("text/scroll", ".scroll")
 
 PROXY_SCHEMES = [
     "gemini",
+    "titan",
     "spartan",
     "text",
     "finger",
@@ -59,6 +60,7 @@ class URLReference:
         "gophers": 70,
         "spartan": 300,
         "gemini": 1965,
+        "titan": 1965,
         "text": 1961,
         "finger": 79,
         "nex": 1900,
@@ -96,6 +98,17 @@ class URLReference:
         # Remove the optional trailing slash
         if self.path == "/":
             self.path = ""
+
+        # Titan URLs may embed upload parameters in the path, e.g.
+        # "titan://host/page;mime=text/plain;size=10". Clients are expected
+        # to ignore any parameters in the URL and supply their own values
+        # at upload time, so they are stripped from the path here. Note that
+        # urlparse() will move part of the path into ``params``, splitting
+        # at the wrong place when a parameter value contains a slash (e.g.
+        # "mime=text/plain"), so both components need to be scrubbed.
+        if self.scheme == "titan":
+            self.path = self.path.split(";", maxsplit=1)[0]
+            self.params = ""
 
         sections = url.split("/", maxsplit=3)
 
@@ -281,6 +294,33 @@ class URLReference:
         # contain encoded IDNs (follows RFC 3490).
         netloc = self.netloc.encode("idna").decode("ascii")
         parts = (self.scheme, netloc, path, self.params, self.query, fragment)
+        url = urlunparse(parts)
+        return f"{url}\r\n".encode()
+
+    def get_titan_request(
+        self, size: int, mime: str | None = None, token: str | None = None
+    ) -> bytes:
+        """
+        Get the URL formatted to be sent to a titan server, with the upload
+        parameters appended to the last path segment.
+        """
+        path = self.path
+        if path == "":
+            path = "/"
+
+        params = f"size={size}"
+        if mime:
+            params += f";mime={quote(mime, safe='/+.-')}"
+        if token:
+            params += f";token={quote(token, safe='')}"
+
+        # Drop the fragment from the request sent to the server
+        fragment = ""
+
+        # Convert domain names to punycode for compatibility with URLs that
+        # contain encoded IDNs (follows RFC 3490).
+        netloc = self.netloc.encode("idna").decode("ascii")
+        parts = (self.scheme, netloc, path, params, self.query, fragment)
         url = urlunparse(parts)
         return f"{url}\r\n".encode()
 

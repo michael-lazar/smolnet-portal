@@ -1,0 +1,37 @@
+{% extends "proxy/base.html" %}
+
+{% block content %}
+<h2>Titan Upload</h2>
+<p><i>This form will upload data to the server using the titan:// protocol.</i></p>
+<form class="titan-form" method="post" enctype="multipart/form-data">
+  <fieldset>
+    <legend>Enter text</legend>
+    <div>
+      <textarea id="titan-content" name="content" rows="15"
+                autocapitalize="none" autocomplete="off" autocorrect="off"
+                spellcheck="false"></textarea>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Or upload a file</legend>
+    <div>
+      <input id="titan-file" type="file" name="file">
+    </div>
+  </fieldset>
+  <p>
+    <label for="titan-mime">MIME type (optional):</label><br>
+    <input id="titan-mime" type="text" name="mime" size="30" placeholder="text/gemini"
+           autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false">
+  </p>
+  <p>
+    <label for="titan-token">Token (optional):</label><br>
+    <input id="titan-token" type="text" name="token" size="30"
+           autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false">
+  </p>
+  <p><input type="submit" value="Upload"></p>
+</form>
+<p>
+  Submitting the form with no content will upload zero bytes, which some
+  servers interpret as a request to delete the resource.
+</p>
+{% endblock %}

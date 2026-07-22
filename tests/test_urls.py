@@ -58,6 +58,53 @@ def test_get_external_indicator_hostname_and_scheme():
     assert url.get_external_indicator() == "gemini://chat.mozz.us"
 
 
+def test_deconstruct_titan():
+    url = URLReference("titan://example.org/raw/Test;token=hello;mime=plain/text;size=10")
+    assert url.scheme == "titan"
+    assert url.port == 1965
+    assert url.hostname == "example.org"
+    assert url.path == "/raw/Test"
+    assert url.params == ""
+    assert url.get_url() == "titan://example.org/raw/Test"
+
+
+def test_deconstruct_titan_query():
+    url = URLReference("titan://example.org/raw/Test;token=hello;size=10?username=Alex")
+    assert url.path == "/raw/Test"
+    assert url.query == "username=Alex"
+    assert url.get_url() == "titan://example.org/raw/Test?username=Alex"
+
+
+def test_deconstruct_titan_no_params():
+    url = URLReference("titan://example.org/raw/Test")
+    assert url.path == "/raw/Test"
+    assert url.get_url() == "titan://example.org/raw/Test"
+
+
+def test_get_titan_request():
+    # Any parameters in the URL are ignored in favor of the values that
+    # were provided by the user.
+    url = URLReference("titan://example.org/raw/Test;token=ignored;size=99")
+    request = url.get_titan_request(10, "text/plain", "hello")
+    assert request == b"titan://example.org/raw/Test;size=10;mime=text/plain;token=hello\r\n"
+
+
+def test_get_titan_request_size_only():
+    url = URLReference("titan://example.org/raw/Test")
+    assert url.get_titan_request(0) == b"titan://example.org/raw/Test;size=0\r\n"
+
+
+def test_get_titan_request_root():
+    url = URLReference("titan://example.org")
+    assert url.get_titan_request(5) == b"titan://example.org/;size=5\r\n"
+
+
+def test_get_titan_request_quoted_token():
+    url = URLReference("titan://example.org/raw/Test")
+    request = url.get_titan_request(5, token="hello world")
+    assert request == b"titan://example.org/raw/Test;size=5;token=hello%20world\r\n"
+
+
 def test_deconstruct_finger_url():
     url = URLReference("finger://space.mit.edu:79/nasanews")
     assert url.finger_request == "nasanews"
@@ -217,6 +264,13 @@ async def test_get_proxy_spartan_link(app):
     async with app.app_context():
         url = base.join("spartan://mozz.us")
         assert url.get_proxy_url() == "http://portal.mozz.us/spartan/mozz.us/"
+
+
+async def test_get_proxy_titan_link(app):
+    base = URLReference("gemini://mozz.us/test/")
+    async with app.app_context():
+        url = base.join("titan://mozz.us/raw/Test;mime=text/plain;size=10")
+        assert url.get_proxy_url() == "http://portal.mozz.us/titan/mozz.us/raw/Test"
 
 
 async def test_get_proxy_text_link(app):

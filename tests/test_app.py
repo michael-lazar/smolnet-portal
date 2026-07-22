@@ -50,6 +50,14 @@ async def test_input_query_redirect(client):
     assert response.location == "/gemini/mozz.us/%3Fhello%2520world"
 
 
+async def test_titan_upload_form(client):
+    # No titan request is made until the upload form is submitted, so no
+    # network access is required.
+    response = await client.get("/titan/mozz.us/test.gmi")
+    assert response.status_code == 200
+    assert "Titan Upload" in await response.get_data(as_text=True)
+
+
 @pytest.mark.integration
 async def test_download_raw_certificate(client):
     response = await client.get("/gemini/mozz.us/?raw_crt=1")

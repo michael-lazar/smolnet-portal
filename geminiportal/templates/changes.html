@@ -3,6 +3,18 @@
 {% block body %}
   <h2>Changes</h2>
   <h3>Unreleased</h3>
+  <h4>Titan</h4>
+  <p>
+    Added support for the <em>titan://</em> protocol 🎉.
+  </p>
+  <p>
+    Titan is a companion protocol to gemini that's used to upload data to a server.
+    Navigating to a titan URL will display a form where you can enter text or attach
+    a file, along with the optional MIME type and token upload parameters. Client
+    certificates are shared with the matching <em>gemini://</em> origin, so a
+    certificate activated for a capsule will also be sent for titan uploads to
+    the same host.
+  </p>
   <h4>Server Migration</h4>
   <p>
     The server running <a href="https://portal.mozz.us">https://portal.mozz.us</a>
