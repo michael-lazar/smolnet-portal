@@ -16,16 +16,18 @@
 <div class="header">
   <div class="header-line">
     <a class="title" href="/">SMOLNET PORTAL</a>
-    <span class="navbar">
-      <a class="header-item" href="/">home</a>
-      <a class="header-item" href="/about">about</a>
-      <a class="header-item" href="/changes">changes</a>
-    </span>
-    <span class="navbar-auth">
+    <nav class="navbar">
+      <span class="site-links">
+        <a class="header-item" href="/">home</a>
+        <a class="header-item" href="/about">about</a>
+        <a class="header-item" href="/changes">changes</a>
+      </span>
       {% if profile_url %}
-      <a class="header-item" href="{{ profile_url }}">profile</a>
+      <span class="user-links">
+        <a class="header-item" href="{{ profile_url }}">profile</a>
+      </span>
       {% endif %}
-    </span>
+    </nav>
   </div>
   <hr>
 </div>

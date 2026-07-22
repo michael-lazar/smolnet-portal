@@ -112,14 +112,17 @@ details summary {
     text-decoration: underline;
 }
 
-.navbar,
-.navbar-auth {
+.navbar {
     display: flex;
+    flex-grow: 1;
+    justify-content: space-between;
     column-gap: 0.4em;
 }
 
-.navbar-auth {
-    margin-left: auto;
+.site-links,
+.user-links {
+    display: flex;
+    column-gap: 0.4em;
 }
 
 .link-form {
