@@ -14,7 +14,7 @@ from geminiportal.models import CertActivation, Session
 from geminiportal.tls import get_ssl_context
 
 # Real keypairs are 1-8 KB, reject anything unreasonably large
-MAX_UPLOAD_SIZE = 32 * 1024
+MAX_PEM_SIZE = 32 * 1024
 
 
 class CertValidationError(Exception):
@@ -86,54 +86,56 @@ async def list_activations(session: Session) -> list[CertActivation]:
         return list(result)
 
 
-def _read_upload(upload: FileStorage) -> bytes:
+def _read_pem_file(upload: FileStorage | None, description: str) -> str:
     """
-    Read an uploaded file, rejecting anything over the size cap without
-    buffering more than the cap into memory.
+    Read a file input from the login form, returning an empty string
+    when the input was left blank. Oversized files are rejected without
+    buffering more than the size cap into memory.
     """
-    data = upload.read(MAX_UPLOAD_SIZE + 1)
-    if len(data) > MAX_UPLOAD_SIZE:
-        raise CertValidationError("The uploaded file is too large.")
-    return data
+    if upload is None or not upload.filename:
+        return ""
 
+    data = upload.read(MAX_PEM_SIZE + 1)
+    if len(data) > MAX_PEM_SIZE:
+        raise CertValidationError(f"The {description} file is too large.")
 
-def _decode_pem(data: bytes, description: str) -> str:
     try:
         return data.decode("utf-8")
     except UnicodeDecodeError:
         raise CertValidationError(f"The {description} file is not valid PEM data.")
 
 
-async def read_keypair_upload() -> tuple[str, str]:
+async def read_keypair_form() -> tuple[str, str]:
     """
-    Read and validate the uploaded keypair from the login form, raising
-    CertValidationError with a user-facing message on failure.
+    Read and validate the client identity submitted to the login form,
+    raising CertValidationError with a user-facing message on failure.
 
-    The uploaded PEM data is stored as-is; when the private key is
-    combined with the certificate in a single file, the returned key is
-    an empty string.
+    The identity arrives either as uploaded files or as a combined PEM
+    pasted into the text box. The PEM data is stored as-is; when the
+    certificate and private key are combined, the returned key is an
+    empty string.
     """
-    if request.content_length and request.content_length > MAX_UPLOAD_SIZE:
-        raise CertValidationError("The uploaded file is too large.")
+    if request.content_length and request.content_length > MAX_PEM_SIZE:
+        raise CertValidationError("The submitted form data is too large.")
 
     form = await request.form
     if not form.get("accept_risk"):
         raise CertValidationError("You must accept the risk acknowledgement.")
 
     files = await request.files
+    cert_pem = _read_pem_file(files.get("cert"), "certificate")
+    key_pem = _read_pem_file(files.get("key"), "private key")
 
-    cert_file = files.get("cert")
-    if cert_file is None or not cert_file.filename:
-        raise CertValidationError("A certificate file is required.")
-    cert_data = _read_upload(cert_file)
+    pem_text = form.get("pem_text", "").strip()
+    if len(pem_text) > MAX_PEM_SIZE:
+        raise CertValidationError("The pasted PEM text is too large.")
 
-    key_data = b""
-    key_file = files.get("key")
-    if key_file is not None and key_file.filename:
-        key_data = _read_upload(key_file)
-
-    cert_pem = _decode_pem(cert_data, "certificate")
-    key_pem = _decode_pem(key_data, "private key") if key_data else ""
+    if pem_text:
+        if cert_pem or key_pem:
+            raise CertValidationError("Provide either uploaded files or pasted PEM text, not both.")
+        cert_pem = pem_text
+    elif not cert_pem:
+        raise CertValidationError("A certificate file or pasted PEM text is required.")
 
     validate_keypair(cert_pem, key_pem)
     return cert_pem, key_pem
@@ -156,9 +158,7 @@ def validate_keypair(cert_pem: str, key_pem: str) -> None:
         try:
             ssl.create_default_context().load_verify_locations(cafile=certfile.name)
         except ssl.SSLError as e:
-            raise CertValidationError(
-                "The certificate file does not contain a PEM-encoded certificate."
-            ) from e
+            raise CertValidationError("No PEM-encoded certificate was found.") from e
 
     try:
         get_ssl_context(cert_pem + "\n" + key_pem if key_pem else cert_pem)

@@ -247,7 +247,7 @@ async def login() -> HTTPResponse:
         return Response(content)
 
     try:
-        cert_pem, key_pem = await auth.read_keypair_upload()
+        cert_pem, key_pem = await auth.read_keypair_form()
     except auth.CertValidationError as e:
         content = await render_template("login.html", error=str(e), form_action=form_action)
         return Response(content, status=400)

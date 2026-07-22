@@ -170,6 +170,23 @@ details summary {
     color: #b02121;
 }
 
+.login-form {
+    margin-top: 1em;
+}
+
+.login-form fieldset,
+.login-form .form-error {
+    margin-bottom: 1em;
+}
+
+.pem-input {
+    font-family: monospace;
+    box-sizing: border-box;
+    width: 100%;
+    /* Fits the 64-character lines of a PEM file without wrapping */
+    max-width: 68ch;
+}
+
 .title {
     font-weight: bolder;
     color: #3f51b5;

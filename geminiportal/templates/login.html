@@ -3,10 +3,10 @@
 {% block body %}
   <h2>Login</h2>
   <p>
-    You can upload a self-signed TLS client certificate in order to make authenticated
-    requests to <em>gemini://</em> servers. Your certificate and private key will be stored
-    on the portal server for the lifetime of your session, and will only be sent to hosts
-    that you choose to activate them for.
+    You can upload a self-signed TLS client certificate in order to make
+    authenticated requests to <em>gemini://</em> servers. Your certificate and private key
+    will be stored on the portal server for the lifetime of your session, and will only be
+    sent to hosts that you choose to activate them for.
   </p>
   <p>
     This feature is intended for testing and other low-stakes use. Your certificate will
@@ -18,22 +18,28 @@
   openssl req -x509 -newkey rsa:2048 -sha256 -days 36500 -nodes \
       -keyout portal-user.key -out portal-user.crt -subj "/CN=portal-user"</pre>
   </details>
-  <br>
-  <form method="post" action="{{ form_action }}" enctype="multipart/form-data">
+  <form class="login-form" method="post" action="{{ form_action }}" enctype="multipart/form-data">
+    {% if error %}
+      <div class="form-error" role="alert">{{ error }}</div>
+    {% endif %}
     <fieldset>
-      <legend>Client identity</legend>
-      {% if error %}
-        <div class="form-error" role="alert">{{ error }}</div>
-      {% endif %}
+      <legend>Upload your certificate files</legend>
       <div>
-        <label for="cert">Certificate file:</label><br>
-        <input type="file" id="cert" name="cert" accept=".pem,.crt" required>
+        <label for="cert">Certificate:</label><br>
+        <input type="file" id="cert" name="cert" accept=".pem,.crt">
       </div>
       <div>
-        <label for="key">Private key file:</label><br>
+        <label for="key">Private key:</label><br>
         <input type="file" id="key" name="key" accept=".pem,.key"><br>
-        <em>Optional - leave this empty if your certificate file
-          already contains the private key (combined PEM file).</em>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Or paste them as text</legend>
+      <div>
+        <label for="pem_text">Combined certificate and private key:</label><br>
+        <textarea id="pem_text" name="pem_text" class="pem-input" rows="10"
+                  spellcheck="false" autocomplete="off" autocapitalize="off"
+                  placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----&#10;-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"></textarea>
       </div>
     </fieldset>
     <p>
