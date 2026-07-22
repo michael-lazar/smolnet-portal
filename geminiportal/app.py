@@ -237,7 +237,7 @@ def post_required(
     return wrapper
 
 
-@app.route("/auth/login", methods=["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"])
 async def login() -> HTTPResponse:
     next_arg = request.args.get("next")
     form_action = url_for("login", next=next_arg) if next_arg else url_for("login")
@@ -273,7 +273,7 @@ async def login() -> HTTPResponse:
     return response
 
 
-@app.route("/auth/logout", methods=["GET", "POST"])
+@app.route("/logout", methods=["GET", "POST"])
 @post_required
 async def logout() -> HTTPResponse:
     if g.session is not None:
@@ -285,7 +285,7 @@ async def logout() -> HTTPResponse:
     return response
 
 
-@app.route("/auth/profile")
+@app.route("/profile")
 @login_required
 async def profile() -> HTTPResponse:
     activations = []

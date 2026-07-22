@@ -2,11 +2,29 @@
 
 {% block body %}
   <h2>Changes</h2>
-  <h3>2026-07-16</h3>
+  <h3>Unreleased</h3>
+  <h4>Server Migration</h4>
+  <p>
+    The server running <a href="https://portal.mozz.us">https://portal.mozz.us</a>
+    has been moved to a new location. Previously it was hosted on a small Digital
+    Ocean VPS, and now it's running on a small Debian server hosted out of my living room.
+  </p>
+  <p>
+    If you are watching for requests from the proxy, the new IP address is 216.82.21.147.
+  </p>
+  <h4>Client Certificates</h4>
+  <p>
+    Added support for <em>gemini://</em> client certificates 🎉.
+  </p>
+  <p>
+    You can now upload a TLS client certificate through the portal and use it to make authenticated
+    requests to gemini capsules. You can try it out by navigating to a capsule that requests a
+    certificate, or going directly to the <a href="/login">login</a> page.
+  </p>
+  <h4>Other Changes</h4>
   <ul>
-    <li>
-      Re-worked error handling and portal error pages to be more clear and consistent.
-    </li>
+    <li>Re-worked error handling and portal error pages to be more clear and consistent.</li>
+    <li>Updated all system libraries including python, openssl, apache, etc.</li>
   </ul>
   <h3>2026-01-15</h3>
   <ul>
@@ -17,7 +35,8 @@
   <h3>2025-11-03</h3>
   <ul>
     <li>
-      Reader mode is now sticky, and will persist when navigating between pages until <b>[exit&nbsp;reader&nbsp;mode]</b>
+      Reader mode is now sticky, and will persist when navigating between pages until
+      <b>[exit&nbsp;reader&nbsp;mode]</b>
       is clicked.
     </li>
   </ul>
@@ -50,7 +69,9 @@
   <ul>
     <li>Headers in gemini/spartan/scroll responses are now page anchors with clickable links.</li>
     <li>Added a <a href="/gemini/mozz.us/">[refresh]</a> link at the top the page to reload the current URL.</li>
-    <li>Exposed the <a href="/gopher/gopher.floodgap.com/?vr=1">[GopherVR]</a> link for gopher pages (still experimental).</li>
+    <li>Exposed the <a href="/gopher/gopher.floodgap.com/?vr=1">[GopherVR]</a> link for gopher pages (still
+      experimental).
+    </li>
     <li>Added tooltip descriptions for the navigation links at the top of the page.</li>
     <li>Fixed handling of malformed gemini link lines containing only "=>".</li>
   </ul>
