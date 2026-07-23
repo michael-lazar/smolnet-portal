@@ -75,7 +75,7 @@ async def test_view_certificate_page(client):
 @pytest.mark.integration
 async def test_gemini_redirect(client):
     response = await client.get("/gemini/mozz.us/journal")
-    assert response.status_code == 307
+    assert response.status_code == 303
     assert response.location == "/gemini/mozz.us/journal/"
 
 

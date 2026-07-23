@@ -202,7 +202,11 @@ def parse_proxy_path_origin(path: str) -> auth.Origin | None:
     if not url.hostname or not url.port:
         return None
 
-    return auth.Origin(cert_origin_scheme(url.scheme), url.hostname, url.port)
+    return auth.Origin(
+        cert_origin_scheme(url.scheme),
+        url.hostname,
+        url.port,
+    )
 
 
 def login_required(
@@ -391,10 +395,12 @@ async def check_captcha(options: ProxyOptions) -> HTTPResponse | None:
         if form.get("captcha"):
             after_this_request(set_captcha_cookie)
             return app.redirect(request.full_path, code=303)
-        elif g.url.scheme != "titan":
-            # The only other form that posts to the proxy endpoint is the
-            # titan upload form.
-            return Response(status=400)
+
+        if g.url.scheme == "titan":
+            # The only other form that posts to the proxy endpoint is titan
+            return None
+
+        return Response(status=400)
 
     if options.raw or options.raw_crt:
         # Allow requests to the raw files.
@@ -435,12 +441,8 @@ async def read_titan_upload() -> tuple[bytes, str | None, str | None]:
         if mime is None:
             mime = file.mimetype or None
     else:
-        # Browsers submit textarea content with CRLF line endings, normalize
-        # them to unix-style line endings before uploading.
         text = form.get("content", "").replace("\r\n", "\n")
         content = text.encode()
-        if mime is None:
-            mime = "text/gemini"
 
     return content, mime, token
 
@@ -479,7 +481,11 @@ async def proxy(
 
     client_crt = None
     if g.session and supports_client_cert(g.url.scheme) and g.url.hostname and g.url.port:
-        origin = auth.Origin(cert_origin_scheme(g.url.scheme), g.url.hostname, g.url.port)
+        origin = auth.Origin(
+            cert_origin_scheme(g.url.scheme),
+            g.url.hostname,
+            g.url.port,
+        )
         g.cert_active = await auth.is_cert_activated(g.session, origin)
         if g.cert_active:
             client_crt = g.session.identity_pem
@@ -504,8 +510,6 @@ async def proxy(
 
     if isinstance(proxy_request, TitanRequest):
         if request.method != "POST":
-            # Render the upload form, the titan request is only made after
-            # the form has been submitted.
             content = await render_template("proxy/titan-upload.html")
             return Response(content)
 

@@ -22,16 +22,6 @@ class GeminiRequest(BaseRequest):
     Encapsulates a gemini:// request.
     """
 
-    def get_request_data(self) -> bytes:
-        """
-        The bytes to send to the server after the TLS handshake.
-        """
-        return self.url.get_gemini_request()
-
-    @property
-    def response_class(self) -> type[GeminiResponse]:
-        return GeminiResponse
-
     async def fetch(self) -> GeminiResponse:
         context = self.create_ssl_context()
         reader, writer = await self.open_connection(ssl=context)
@@ -43,14 +33,14 @@ class GeminiRequest(BaseRequest):
         tls_version = ssock.version()
         tls_cipher, _, _ = ssock.cipher()
 
-        data = self.get_request_data()
+        data = self.url.get_gemini_request()
         writer.write(data)
         await writer.drain()
 
         raw_header = await reader.readline()
         status, meta = self.parse_response_header(raw_header)
 
-        return self.response_class(
+        return GeminiResponse(
             request=self,
             reader=reader,
             writer=writer,
@@ -132,9 +122,6 @@ class GeminiResponse(BaseResponse):
 class GeminiProxyResponseBuilder(BaseProxyResponseBuilder):
     response: GeminiResponse
 
-    # HTTP status code used when proxying 3x gemini redirects
-    redirect_code = 307
-
     async def build_proxy_response(self):
         if self.response.options.raw_crt:
             return QuartResponse(
@@ -169,8 +156,11 @@ class GeminiProxyResponseBuilder(BaseProxyResponseBuilder):
             return await self.render_from_handler()
 
         elif self.response.status.startswith("3"):
+            # Use a 303 so the browser always follows the redirect with a
+            # GET request. Titan uploads are proxied as POSTs, and must not
+            # be re-submitted to the redirect target.
             location = self.response.url.join(self.response.meta).get_proxy_url()
-            return redirect(location, self.redirect_code)
+            return redirect(location, 303)
 
         elif self.response.status.startswith(("4", "5")):
             content = await render_template(

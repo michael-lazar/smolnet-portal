@@ -298,7 +298,10 @@ class URLReference:
         return f"{url}\r\n".encode()
 
     def get_titan_request(
-        self, size: int, mime: str | None = None, token: str | None = None
+        self,
+        size: int,
+        mime: str | None = None,
+        token: str | None = None,
     ) -> bytes:
         """
         Get the URL formatted to be sent to a titan server, with the upload

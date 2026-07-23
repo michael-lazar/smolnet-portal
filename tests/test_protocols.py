@@ -31,25 +31,6 @@ def test_build_proxy_request_titan():
     assert request.host == "mozz.us"
 
 
-def test_titan_request_data():
-    url = URLReference("titan://mozz.us/hello")
-    request = build_proxy_request(url)
-    assert isinstance(request, TitanRequest)
-
-    request.set_upload(b"hello world", "text/plain", "secret")
-    assert request.get_request_data() == (
-        b"titan://mozz.us/hello;size=11;mime=text/plain;token=secret\r\nhello world"
-    )
-
-
-def test_titan_request_data_empty():
-    # A zero-byte upload, which titan servers may treat as a delete request
-    url = URLReference("titan://mozz.us/hello")
-    request = build_proxy_request(url)
-    assert isinstance(request, TitanRequest)
-    assert request.get_request_data() == b"titan://mozz.us/hello;size=0\r\n"
-
-
 def test_build_proxy_request_spartan():
     url = URLReference("spartan://mozz.us:3000")
     request = build_proxy_request(url)

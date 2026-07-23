@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-from geminiportal.protocols.gemini import (
-    GeminiProxyResponseBuilder,
-    GeminiRequest,
-    GeminiResponse,
-)
+from geminiportal.protocols.base import BaseRequest
+from geminiportal.protocols.gemini import GeminiResponse
+from geminiportal.tls import CloseNotifyState
 from geminiportal.urls import URLReference
 from geminiportal.utils import ProxyOptions
 
 
-class TitanRequest(GeminiRequest):
+class TitanRequest(BaseRequest):
     """
     Encapsulates a titan:// request.
 
@@ -34,24 +32,33 @@ class TitanRequest(GeminiRequest):
         self.mime = mime
         self.token = token
 
-    def get_request_data(self) -> bytes:
-        request = self.url.get_titan_request(len(self.content), self.mime, self.token)
-        return request + self.content
+    async def fetch(self) -> GeminiResponse:
+        context = self.create_ssl_context()
+        reader, writer = await self.open_connection(ssl=context)
 
-    @property
-    def response_class(self) -> type[GeminiResponse]:
-        return TitanResponse
+        ssock = writer.get_extra_info("ssl_object")
+        tls_close_notify = CloseNotifyState(ssock)
 
+        tls_cert = ssock.getpeercert(True)
+        tls_version = ssock.version()
+        tls_cipher, _, _ = ssock.cipher()
 
-class TitanResponse(GeminiResponse):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.proxy_response_builder = TitanProxyResponseBuilder(self)
+        data = self.url.get_titan_request(len(self.content), self.mime, self.token)
+        writer.write(data)
+        writer.write(self.content)
+        await writer.drain()
 
+        raw_header = await reader.readline()
+        status, meta = self.parse_response_header(raw_header)
 
-class TitanProxyResponseBuilder(GeminiProxyResponseBuilder):
-    response: TitanResponse
-
-    # Redirect with a 303 so the browser follows up with a GET request,
-    # instead of re-submitting the upload form to the new location.
-    redirect_code = 303
+        return GeminiResponse(
+            request=self,
+            reader=reader,
+            writer=writer,
+            status=status,
+            meta=meta,
+            tls_cert=tls_cert,
+            tls_version=tls_version,
+            tls_cipher=tls_cipher,
+            tls_close_notify=tls_close_notify,
+        )
