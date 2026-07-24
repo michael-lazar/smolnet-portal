@@ -1,0 +1,18 @@
+{
+  "name": "gemini-portal-editor",
+  "private": true,
+  "description": "Build setup for the vendored gemtext editor bundle (geminiportal/static/gemtext-editor.js)",
+  "scripts": {
+    "build": "esbuild gemtext-editor.mjs --bundle --minify --format=iife --banner:js='/* Gemtext editor for the titan:// upload form. Bundled from extras/gemtext-editor, do not edit directly. Includes CodeMirror (https://codemirror.net), MIT licensed. */' --outfile=../../geminiportal/static/gemtext-editor.js"
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.0.0",
+    "@codemirror/language": "^6.0.0",
+    "@codemirror/state": "^6.0.0",
+    "@codemirror/view": "^6.0.0",
+    "@lezer/highlight": "^1.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

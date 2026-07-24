@@ -1,5 +1,10 @@
 {% extends "proxy/base.html" %}
 
+{% block extrahead %}
+  <link rel="stylesheet" href="/static/gemtext-editor.css">
+  <script src="/static/gemtext-editor.js" defer></script>
+{% endblock %}
+
 {% block content %}
   <h2>Titan Upload</h2>
   <p><i>This form will upload data to the server using the titan:// protocol.</i></p>

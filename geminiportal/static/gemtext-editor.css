@@ -1,0 +1,82 @@
+/*
+ * Styles for the gemtext editor on the titan:// upload form. The editor
+ * is created by gemtext-editor.js (see extras/gemtext-editor), which assigns
+ * the gt-* classes to gemtext line types.
+ *
+ * Colors use CSS system colors (Field, LinkText, GrayText, ...) which
+ * automatically follow the light/dark color-scheme set in base.html.
+ */
+
+.titan-form .cm-editor {
+    box-sizing: border-box;
+    width: 100%;
+    max-height: 70vh;
+    border: 1px solid GrayText;
+    background-color: Field;
+    color: FieldText;
+}
+
+.titan-form .cm-editor.cm-focused {
+    /* Override codemirror's default dotted focus outline, the blinking
+       cursor is enough of a focus indicator. */
+    outline: none;
+}
+
+.titan-form .cm-scroller {
+    overflow: auto;
+    font-family: inherit;
+    line-height: 1.4;
+}
+
+.titan-form .cm-content {
+    min-height: 20em;
+    padding: 4px;
+    caret-color: FieldText;
+}
+
+.titan-form .cm-editor div {
+    /* Cancel out the global div margin from site.css, which would
+       otherwise add vertical space between every editor line. */
+    margin-bottom: 0;
+}
+
+.gt-h1 {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.gt-h2 {
+    font-size: 1.25em;
+    font-weight: bold;
+}
+
+.gt-h3 {
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.gt-quote {
+    font-style: italic;
+}
+
+/* Markers and preformatted text are dimmed monospace. The doubled
+   "monospace, monospace" plus font-size defeats the browser quirk
+   where bare monospace renders at a smaller default size (typically
+   13px), and 0.85em optically balances the monospace font against
+   the smaller x-height of the default serif. */
+.gt-list,
+.gt-marker,
+.gt-pre {
+    color: GrayText;
+    font-family: monospace, monospace;
+    font-size: 0.85em;
+}
+
+.gt-url {
+    color: LinkText;
+    text-decoration: underline;
+}
+
+.gt-link {
+    color: GrayText;
+}
