@@ -66,16 +66,6 @@ def supports_client_cert(scheme: str) -> bool:
     return scheme in ("gemini", "titan", "gophers", "scroll")
 
 
-def cert_origin_scheme(scheme: str) -> str:
-    """
-    The scheme used when storing client certificate activations.
-
-    Titan uploads are served by the same gemini server, so certificate
-    activations are shared with the gemini origin.
-    """
-    return "gemini" if scheme == "titan" else scheme
-
-
 class ResponseSizeExceeded(Exception):
     """
     The response body exceeded the maximum size that can be buffered

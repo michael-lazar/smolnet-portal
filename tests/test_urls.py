@@ -206,6 +206,16 @@ def test_get_root_url_view_source():
     assert url.get_root().get_url() == "gemini://mozz.us"
 
 
+def test_get_root_url_titan():
+    url = URLReference("titan://mozz.us/hello/world")
+    assert url.get_root().get_url() == "gemini://mozz.us"
+
+
+def test_get_parent_url_titan():
+    url = URLReference("titan://mozz.us/hello/world")
+    assert url.get_parent().get_url() == "gemini://mozz.us/hello/"
+
+
 def test_get_parent_url_base():
     url = URLReference("gemini://mozz.us")
     assert url.get_parent() is None

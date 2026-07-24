@@ -55,7 +55,11 @@ async def test_titan_upload_form(client):
     # network access is required.
     response = await client.get("/titan/mozz.us/test.gmi")
     assert response.status_code == 200
-    assert "Titan Upload" in await response.get_data(as_text=True)
+
+    body = await response.get_data(as_text=True)
+    assert "Titan Upload" in body
+    assert "Upload text" in body
+    assert "Upload file" in body
 
 
 @pytest.mark.integration

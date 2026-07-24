@@ -402,12 +402,24 @@ class URLReference:
             # Force gopher menu type
             path = f"/1{path[2:]}"
 
+        scheme = self.origin_scheme
         if self.netloc and path:
-            return URLReference(f"{self.scheme}://{self.netloc}{path}")
+            return URLReference(f"{scheme}://{self.netloc}{path}")
         elif self.netloc:
-            return URLReference(f"{self.scheme}://{self.netloc}")
+            return URLReference(f"{scheme}://{self.netloc}")
         else:
             return None
+
+    @property
+    def origin_scheme(self) -> str:
+        """
+        The scheme of the origin that the URL belongs to.
+
+        Titan is a companion protocol served by the same gemini server, so
+        navigation and client certificate activations are shared with the
+        gemini origin.
+        """
+        return "gemini" if self.scheme == "titan" else self.scheme
 
     def get_parent(self) -> URLReference | None:
         """
@@ -425,10 +437,11 @@ class URLReference:
             # Force gopher menu type
             path = f"/1{path[2:]}"
 
+        scheme = self.origin_scheme
         if self.netloc and path:
-            return URLReference(f"{self.scheme}://{self.netloc}{path}")
+            return URLReference(f"{scheme}://{self.netloc}{path}")
         elif self.netloc:
-            return URLReference(f"{self.scheme}://{self.netloc}")
+            return URLReference(f"{scheme}://{self.netloc}")
         else:
             return None
 

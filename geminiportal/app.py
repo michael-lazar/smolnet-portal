@@ -21,7 +21,7 @@ from geminiportal import auth, db, sessions
 from geminiportal.errors import BaseProxyError, InvalidRequestError
 from geminiportal.favicons import favicon_cache
 from geminiportal.protocols import build_proxy_request
-from geminiportal.protocols.base import cert_origin_scheme, supports_client_cert
+from geminiportal.protocols.base import supports_client_cert
 from geminiportal.protocols.titan import TitanRequest
 from geminiportal.tls import parse_tls_cert
 from geminiportal.urls import URLReference, quote_gopher
@@ -109,7 +109,7 @@ def inject_context():
 
         if "cert_active" in g:
             cert_params = {
-                "scheme": cert_origin_scheme(g.url.scheme),
+                "scheme": g.url.origin_scheme,
                 "hostname": g.url.hostname,
                 "port": g.url.port,
                 "next": request.full_path,
@@ -203,7 +203,7 @@ def parse_proxy_path_origin(path: str) -> auth.Origin | None:
         return None
 
     return auth.Origin(
-        cert_origin_scheme(url.scheme),
+        url.origin_scheme,
         url.hostname,
         url.port,
     )
@@ -482,7 +482,7 @@ async def proxy(
     client_crt = None
     if g.session and supports_client_cert(g.url.scheme) and g.url.hostname and g.url.port:
         origin = auth.Origin(
-            cert_origin_scheme(g.url.scheme),
+            g.url.origin_scheme,
             g.url.hostname,
             g.url.port,
         )
