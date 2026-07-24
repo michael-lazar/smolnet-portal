@@ -199,7 +199,6 @@ details summary {
     font-family: monospace;
     box-sizing: border-box;
     width: 100%;
-    max-width: 80ch;
 }
 
 .title {
