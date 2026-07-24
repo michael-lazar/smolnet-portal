@@ -69,14 +69,19 @@ def parse_link_line(line: str, base: URLReference) -> tuple[URLReference, str, s
 def split_emoji(line: str) -> tuple[str, str]:
     """
     Strips out a potential emoji at the beginning on a line of text.
+
+    If the line doesn't contain any text after the emoji, it's left
+    intact so the emoji isn't stripped from link labels & page titles.
     """
     for i in range(4, 0, -1):
         # Start with 4 characters and work backwards to 1 to check for
         # emojis that span multiple code points.
         if is_emoji(line[:i]):
             emoji = line[:i]
-            link_text = line[i:].strip()
-            return emoji, link_text
+            text = line[i:].strip()
+            if text:
+                return emoji, text
+            break
 
     return "", line
 
