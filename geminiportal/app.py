@@ -416,6 +416,10 @@ async def check_captcha(options: ProxyOptions) -> HTTPResponse | None:
         # Allow www.sejda.com HTML -> PDF conversion tool
         return None
 
+    if "UptimeRobot" in user_agent:
+        # Allow status monitoring
+        return None
+
     captcha = request.cookies.get("captcha")
     if captcha:
         after_this_request(set_captcha_cookie)
