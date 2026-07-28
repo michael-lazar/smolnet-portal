@@ -422,7 +422,9 @@ async def check_captcha(options: ProxyOptions) -> HTTPResponse | None:
         return None
 
     content = await render_template("proxy/captcha.html")
-    return Response(content)
+    response = Response(content, status=403)
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 async def read_titan_upload() -> tuple[bytes, str | None, str | None]:
