@@ -5,7 +5,7 @@
   <p>This website is a proxy service that exposes <a href="https://geminiprotocol.net/">gemini://</a>
     servers (and related protocols) over the web so they can be accessed in a normal web browser.</p>
   <p>This is a hobby project that I host on my personal server and maintain in my spare time.</p>
-  <h3>History</h3>
+  <h3 id="history"><a href="#history" class="header-anchor">History</a></h3>
   <p>
     This website was originally started in 2019 as a testbed for <em>gemini://</em> client development, and was
     named <b>Gemini Portal</b>. </p>
@@ -15,34 +15,34 @@
     support for <em>gopher://</em> was added and the site was renamed to <b>Smolnet Portal</b> to reflect the
     increasing scope of the project.
   </p>
-  <h3>Design</h3>
+  <h3 id="design"><a href="#design" class="header-anchor">Design</a></h3>
   <p>
     This site is unapologetically <strike><a href="https://brutalistwebsites.com/">brutalist</a></strike> by design.
   </p>
   <p>
     (That link used to have good examples, but now it's full of weird artsy stuff.)
   </p>
-  <h3>GopherVR</h3>
+  <h3 id="gophervr"><a href="#gophervr" class="header-anchor">GopherVR</a></h3>
   <p>
     I started working on a modern port of <a href="https://en.wikipedia.org/wiki/GopherVR">GopherVR</a>
     using javascript & WebVR.</p>
   <p>Development has stalled, but you can play with the early version by adding <em>?vr=1</em> to
     the end of any gopher URL. E.g. <a href="/gopher/gopher.quux.org/?vr=1">/gopher/gopher.quux.org/?vr=1</a>
   </p>
-  <h3>TLS certificates</h3>
+  <h3 id="tls-certificates"><a href="#tls-certificates" class="header-anchor">TLS certificates</a></h3>
   <p>
     All gemini connections are made securely over TLS. This proxy does not attempt to
     validate the TLS certificates for gemini servers, nor will it compare them against any
     previously seen fingerprints (TOFU scheme). The proxied server's x509 certificate can be
     manually inspected by clicking the <a href="https://portal.mozz.us/gemini/mozz.us/?crt=1">[view cert]</a> link at
     the top of the page. </p>
-  <h3>Favicons</h3>
+  <h3 id="favicons"><a href="#favicons" class="header-anchor">Favicons</a></h3>
   <p>
     This proxy provides experimental support for gemini emoji favicons, as outlined in this
     <a href="https://portal.mozz.us/gemini/mozz.us/files/rfc_gemini_favicon.gmi">draft specification</a>.
     If a valid favicon is found, it will be displayed on the left side of the URL bar. Favicons are
     cached per-domain for up to 4 hours. </p>
-  <h3>Blocking Access</h3>
+  <h3 id="blocking-access"><a href="#blocking-access" class="header-anchor">Blocking Access</a></h3>
   <p>
     This proxy used to honor the gemini
     <a href="https://portal.mozz.us/gemini/gemini.circumlunar.space/docs/companion/robots.gmi">robots.txt</a>
@@ -56,7 +56,7 @@
   <p>
     <em>This host has kindly requested that their content not be accessed via web proxy.</em>
   </p>
-  <h3>RSS Feeds</h3>
+  <h3 id="rss-feeds"><a href="#rss-feeds" class="header-anchor">RSS Feeds</a></h3>
   <p>
     You can use this site to convert RSS feeds that are hosted on alternate protocols. Add <i>?raw=1</i>
     to the end of a proxy URL in order to fetch the plain XML file.
@@ -64,7 +64,7 @@
   <p>
     <i>Example: <a href="https://portal.mozz.us/gemini/geminiprotocol.net/news/atom.xml?raw=1">https://portal.mozz.us/gemini/geminiprotocol.net/news/atom.xml?raw=1</a></i>
   </p>
-  <h3>Proxy Links</h3>
+  <h3 id="proxy-links"><a href="#proxy-links" class="header-anchor">Proxy Links</a></h3>
   <p>
     If you have an existing gemini/gopher URL, and you want to create a hyperlink to view it in
     the proxy, you can use the <i>?url=&lt;url&gt;</i> query parameter. This will redirect to
@@ -73,11 +73,11 @@
   <p>
     <i>Example: <a href="https://portal.mozz.us?url=gemini://geminiprotocol.net">https://portal.mozz.us?url=gemini://geminiprotocol.net</a></i>
   </p>
-  <h3>Source Code</h3>
+  <h3 id="source-code"><a href="#source-code" class="header-anchor">Source Code</a></h3>
   <p>
     You can find the source for this server at <a href="https://github.com/michael-lazar/smolnet-portal">https://github.com/michael-lazar/smolnet-portal</a>.
   </p>
-  <h3>Contact</h3>
+  <h3 id="contact"><a href="#contact" class="header-anchor">Contact</a></h3>
   <p>
     Please email me at <a href="mailto:michael@mozz.us">michael@mozz.us</a> if you find any
     bugs or have any questions about how this proxy works. </p>

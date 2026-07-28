@@ -1,313 +1,316 @@
 {% extends "base.html" %}
 
 {% block body %}
-  <h2>Changes</h2>
-  <h3>Unreleased</h3>
-  <h4>Server Migration</h4>
-  <p>
-    The server running <a href="https://portal.mozz.us">https://portal.mozz.us</a>
-    has been moved to a new location. Previously it was hosted on a small Digital
-    Ocean VPS, and now it's hosted on a small Debian server in my living room. Along
-    with moving physical locations, I have also taken the opportunity to rebuild the
-    operating system/web stack that the server is running on top of. I will be monitoring
-    traffic and watching for performance regressions, and please reach out to me if you
-    use this service and see any new issues.
-  </p>
-  <p>
-    If you're watching for requests from the proxy, the new IP address to look for is 216.82.21.147.
-  </p>
-  <h4>Client Certificates</h4>
-  <p>
-    Added support for <em>gemini://</em> client certificates 🎉.
-  </p>
-  <p>
-    You can now upload a TLS client certificate through the portal and use it to make authenticated
-    requests to gemini capsules. You can try it out by navigating to a capsule that requests a
-    certificate, or going directly to the <a href="/login">login</a> page.
-  </p>
-  <h4>Titan</h4>
-  <p>
-    Added support for the <em>titan://</em> protocol 🎉.
-  </p>
-  <p>
-    The <a href="/gemini/transjovian.org/titan/index">Titan protocol</a> is an add-on for gemini
-    that enables uploading data to gemini servers. Opening a titan URL will now display a form that
-    can be used to compose a <em>text/gemini</em> document or select a file to upload.
-  </p>
-  <h4>Other Changes</h4>
-  <ul>
-    <li>Re-worked error handling and portal error pages to be more clear and consistent.</li>
-    <li>Updated all system libraries including python, openssl, apache, etc.</li>
-    <li>Fixed link lines not being clickable when they only contained an emoji character.</li>
-  </ul>
-  <h3>2026-01-15</h3>
-  <ul>
-    <li>
-      Removed the gray background when hovering over links in gopher:// (I don't like it anymore).
-    </li>
-  </ul>
-  <h3>2025-11-03</h3>
-  <ul>
-    <li>
-      Reader mode is now sticky, and will persist when navigating between pages until
-      <b>[exit&nbsp;reader&nbsp;mode]</b>
-      is clicked.
-    </li>
-  </ul>
-  <h3>2025-10-13</h3>
-  <ul>
-    <li>
-      Added a <a href="/gemini/mozz.us/?reader=1">[reader]</a> link at the top of the page to
-      activate "reader mode" with less visual clutter.
-    </li>
-  </ul>
-  <h3>2025-10-12</h3>
-  <h4>Scroll</h4>
-  <p>
-    Added support for the <a href="/scroll/scrollprotocol.us.to/spec.scroll">scroll://</a> protocol 🎉.
-  </p>
-  <ul>
-    <li>
-      There's a <a href="/scroll/scrollprotocol.us.to/?meta=1">[meta]</a> link at the top of
-      the page that will make a metadata request for the current document.
-    </li>
-    <li>
-      You can specify your desired response language by adding a <i>?lang=&lt;code&gt;</i> query parameter.
-      <ul>
-        <li>For example, <a href="/scroll/scrollprotocol.us.to/?lang=es">/scroll/scrollprotocol.us.to/?lang=es</a>.</li>
-        <li>(I haven't found any examples in-the-wild to test this with)</li>
-      </ul>
-    </li>
-  </ul>
-  <h4>Other Changes</h4>
-  <ul>
-    <li>Headers in gemini/spartan/scroll responses are now page anchors with clickable links.</li>
-    <li>Added a <a href="/gemini/mozz.us/">[refresh]</a> link at the top the page to reload the current URL.</li>
-    <li>Exposed the <a href="/gopher/gopher.floodgap.com/?vr=1">[GopherVR]</a> link for gopher pages (still
-      experimental).
-    </li>
-    <li>Added tooltip descriptions for the navigation links at the top of the page.</li>
-    <li>Fixed handling of malformed gemini link lines containing only "=>".</li>
-  </ul>
-  <h3>2025-09-07</h3>
-  <ul>
-    <li>Added support for dark mode if your browser/OS is configured to prefer it.</li>
-  </ul>
-  <h3>2025-08-26</h3>
-  <ul>
-    <li>Improved the algorithm for detecting links in plaintext responses.</li>
-    <li>Added a shortcut to the fingerverse on the front page.</li>
-    <li>Fixed edge-case handling gopher selectors containing #fragments.</li>
-  </ul>
-  <h3>2025-05-31</h3>
-  <ul>
-    <li>Disabled the captcha check for proxy requests to raw files with <i>?raw=1</i>.</li>
-    <li>Removed the <i>X-Frame-Options</i> header to allow the site to be embedded.</li>
-    <li>Added help sections on RSS feeds and proxy links.</li>
-  </ul>
-  <h3>2025-03-24</h3>
-  <ul>
-    <li>Reduced a possible tracking vector with the new captcha cookie.</li>
-    <li>Made a long-overdue update to the <a href="/about">about</a> page.</li>
-  </ul>
-  <h3>2025-03-22</h3>
-  <ul>
-    <li>Added a captcha to further protect against web crawlers.</li>
-  </ul>
-  <h3>2025-01-29</h3>
-  <p>
-    Note: I'm aware that recent activity from web crawlers has been spamming some gemini/gopher
-    servers with a large amount of traffic from this web proxy. Sorry about that! If it's causing
-    issues for you, you can block this server's IP address and/or reach out to me over email at
-    <a href="mailto:michael@mozz.us">michael@mozz.us</a> with details, and I'll work on mitigation. </p>
-  <ul>
-    <li>Added a hidden bot-prevention link to the bottom of the page.</li>
-  </ul>
-  <h3>2023-11-13</h3>
-  <ul>
-    <li>Moved the response details from the top of the page to the bottom of the page.</li>
-    <li>Updated styling for input boxes and iframe previews.</li>
-    <li>Fixed consecutive slashes being erroneously compressed in gopher queries.</li>
-    <li>Fixed handling of gopher menus items with empty <i>port</i> components.</li>
-  </ul>
-  <h3>2023-10-08</h3>
-  <ul>
-    <li>Fixed username/password components from being stripped from links,
-      for example in <i>mailto://</i> URLs.
-    </li>
-  </ul>
-  <h3>2023-08-13</h3>
-  <ul>
-    <li>Gopher menus now use icons for item types.
-      The icons were borrowed from <a href="https://www.apache.org/icons/">apache's httpd</a>
-      and are licensed under public domain.
-    </li>
-    <li>Fixed missing line breaks in <i>text/gemini</i> pages when using Lynx (if you use Lynx, you should
-      also set <i>COLLAPSE_BR_TAGS:FALSE</i> in your browser config to preserve blank lines).
-    </li>
-    <li>Fiddling around with the site style.</li>
-  </ul>
-  <h3>2023-08-09</h3>
-  <ul>
-    <li>Text responses that are not valid UTF-8 will now use the <a
-      href="https://github.com/chardet/chardet">chardet</a>
-      library to attempt to guess the correct character encoding. The desired file encoding can also be indicated by
-      appending <i>?charset=...</i> to the end of the URL.
-    </li>
-    <li>The following response types will now be displayed inside of an iframe preview window:
-      <ul>
-        <li><i>text/html</i></li>
-        <li><i>text/xml</i></li>
-        <li><i>application/pdf</i></li>
-        <li><i>application/json</i></li>
-      </ul>
-    </li>
-    <li>Bumped max line width from <i>80ch</i> to <i>100ch</i>.</li>
-  </ul>
-  <h3>2023-08-04</h3>
-  <ul>
-    <li>Unhandled file types under 1 MB are now displayed as <i>data://</i> links instead of being opened directly.</li>
-  </ul>
-  <h3>2023-08-03</h3>
-  <h4>Gopher+</h4>
-  <p>This update adds initial support for the <a href="https://github.com/gopher-protocol/gopher-plus">Gopher+
-    protocol</a>! 🎉</p>
-  <ul>
-    <li>Gopher+ URLs are now fully supported, per <a href="https://datatracker.ietf.org/doc/html/rfc4266">RFC 4266</a>.
-    </li>
-    <li>Gopher menus will include an [i] icon next to Gopher+ capable links.</li>
-    <li>There's a new [gopher+ info] shortcut below the URL bar.</li>
-    <li>Gopher+ attributes will be rendered using as <em>application/gopher+-attribute</em>.</li>
-    <li>ASK blocks are not supported yet.</li>
-  </ul>
-  <p>Here are some example URLs to try it out:</p>
-  <ul>
-    <li><a href="/gopher/gopher.quux.org/1%2509%2509+">gopher://gopher.quux.org/1%09%09+</a> <i>(gopher+ menu)</i></li>
-    <li><a href="/gopher/gopher.quux.org/1%2509%2509!">gopher://gopher.quux.org/1%09%09!</a> <i>(gopher+ attributes,
-      single item)</i></li>
-    <li><a href="/gopher/gopher.quux.org/1%2509%2509$">gopher://gopher.quux.org/1%09%09$</a> <i>(gopher+ attributes,
-      directory)</i></li>
-  </ul>
-  <h4>Other Changes</h4>
-  <ul>
-    <li>The HTML title and favicon are now set dynamically based on the proxied response.</li>
-    <li>The Response Details table is new minimized by default to reduce visual clutter.</li>
-    <li><i>gopher://</i> URLs will now have their path component percent-encoded. Although
-      this is not required by the RFC, I have found that gopher URLs that contain special
-      characters such as spaces will confuse most URL-parsing libraries.
-    </li>
-    <li>Ports 77 and 8070 are now whitelisted for proxy requests.</li>
-    <li>Fixed emoji detection to work with multi-codepoint sequences.</li>
-    <li>Fixed empty gopher info lines being collapsed.</li>
-  </ul>
-  <h3>2023-07-17</h3>
-  <ul>
-    <li>Fixed a bug causing large responses to be truncated.</li>
-  </ul>
-  <h3>2023-07-12</h3>
-  <ul>
-    <li>Renamed the project from "Gemini Portal" to "SmolNet Portal", and revamped the homepage.</li>
-    <li>Added protocol support for <i>gopher://</i> and <i>gophers://</i> (finally!).</li>
-    <li>Added protocol support for the brand new <i>nex://</i> protocol.</li>
-    <li>The proxy response will now automatically switch to streaming mode for files over 1 MB.</li>
-    <li>Removed the [inline images] feature, I have plans to expand on this idea in the future.</li>
-    <li>Added (external indicators) next to links in gemini documents.</li>
-    <li>Added support for the unofficial `---` (horizontal rule) gemini line type.</li>
-    <li>Improved error pages, and various other minor tweaks.</li>
-  </ul>
-  <h3>2023-05-17</h3>
-  <ul>
-    <li>Link lines that start with an emoji character will no longer underline the emoji.</li>
-  </ul>
-  <h3>2023-03-16</h3>
-  <ul>
-    <li>Fixed intermittent 500 errors (hopefully 🤞).</li>
-    <li>Fixed clicking to enlarge images.</li>
-  </ul>
-  <h3>2023-02-22</h3>
-  <ul>
-    <li>Fixed the construction of relative URLs using the <i>finger://</i> scheme.</li>
-  </ul>
-  <h3>2023-01-18</h3>
-  <p>
-    This release marks a major milestone and rewrite of the proxy server,
-    geared towards improving performance on my poor VPC instance. Please
-    let me know if you encounter any broken links or pages that were
-    previously working, and I'll do my best to fix them. </p>
-  <ul>
-    <li>The proxy codebase is now hosted publicly at <a href="https://github.com/michael-lazar/smolnet-portal">https://github.com/michael-lazar/smolnet-portal</a>
-    </li>
-    <li>The server now has an actual <a href="/">homepage</a>.</li>
-    <li>Added proxy support for the <a href="/finger/mozz.us/michael"><i>finger://</i></a> protocol.</li>
-    <li>Added click-to-zoom for images via optional javascript.</li>
-    <li>The server is now enforcing a 10s connect timeout for proxied hosts.</li>
-    <li>Added link detection in <em>text/plain</em> responses via regular expressions.</li>
-    <li>Revamped URL parsing and normalization engine for all protocols.</li>
-    <li>Added graceful handling for pages with invalid character encodings.</li>
-    <li>Large responses (bigger than 8MB) are now handled more efficiently.</li>
-    <li>Removed support for the legacy <em>?reflow=</em> query parameters.</li>
-  </ul>
-  <h3>2021-08-01</h3>
-  <ul>
-    <li>This proxy is now available over port 80! <a href="http://portal.mozz.us">http://portal.mozz.us</a>
-    </li>
-    <li>Removed the &lt;a&gt; tags from headers, because they render poorly in some browsers.
-  </ul>
-  <h3>2021-07-03</h3>
-  <ul>
-    <li>
-      URL fragments on gemini URLs will now anchor to page headers in text/gemini documents.
-      See the <a href="https://gitlab.com/gemini-specification/gemini-text/-/issues/3#note_519439831">protocol
-      discussion thread</a> for more details.
-    </li>
-  </ul>
-  <h3>2021-04-18</h3>
-  <ul>
-    <li>Added proxy support for the <a href="/text/txt.textprotocol.org/">text://</a> protocol.</li>
-  </ul>
-  <h3>2021-04-17</h3>
-  <ul>
-    <li>Updated networking to support IPv6 gemini servers.</li>
-    <li>Updated OpenSSL library - TLS 1.3 and Ed25519 keys are now supported.</li>
-  </ul>
-  <h3>2021-03-24</h3>
-  <ul>
-    <li>Disabled autocomplete & spell checking on the URL input bar.</li>
-    <li>Added proxy support for the spartan:// protocol.</li>
-  </ul>
-  <h3>2021-03-05</h3>
-  <ul>
-    <li>Added "blocking access" section to the <a href="/about">about</a> page.</li>
-  </ul>
-  <h3>2021-02-07</h3>
-  <ul>
-    <li>Prevent automatic redirects from <em>gemini://example.com</em> to <em>gemini://example.com/</em>.</li>
-  </ul>
-  <h3>2021-02-07</h3>
-  <ul>
-    <li>Better error handling if a link line contains an invalid URL.</li>
-  </ul>
-  <h3>2021-02-06</h3>
-  <ul>
-    <li>Emoji favicons will now be rendered as the <em>actual</em> site favicon thanks to a neat svg hack.</li>
-  </ul>
-  <h3>2021-01-05</h3>
-  <ul>
-    <li>Dropped the css <em>max-width</em> from 120ch to 100ch.</li>
-  </ul>
-  <h3>2020-12-28</h3>
-  <ul>
-    <li>Added a new <a href="/gemini/mozz.us/?inline=1">[inline images]</a> button to toggle viewing images in <em>text/gemini</em>
-      documents.
-    </li>
-    <li>Gemini capsule robots.txt files are no longer checked, since nobody seems to care about this in the context of a
-      web proxy...
-    </li>
-  </ul>
-  <h3>2020-12-15</h3>
-  <ul>
-    <li>Added support for <em>;rаbbiΤ;</em> formatting flags.
-      <pre>
+<h2>Changes</h2>
+<h3 id="unreleased"><a href="#unreleased" class="header-anchor">Unreleased</a></h3>
+<h4>Server Migration</h4>
+<p>
+  The server running <a href="https://portal.mozz.us">https://portal.mozz.us</a>
+  has been moved to a new location. Previously it was hosted on a small Digital
+  Ocean VPS, and now it's hosted on a small Debian server in my living room. Along
+  with moving physical locations, I have also taken the opportunity to rebuild the
+  operating system/web stack that the server is running on top of. I will be monitoring
+  traffic and watching for performance regressions, and please reach out to me if you
+  use this service and see any new issues.
+</p>
+<p>
+  If you're watching for requests from the proxy, the new IP address to look for is 216.82.21.147.
+</p>
+<h4>Client Certificates</h4>
+<p>
+  Added support for <em>gemini://</em> client certificates 🎉.
+</p>
+<p>
+  You can now upload a TLS client certificate through the portal and use it to make authenticated
+  requests to gemini capsules. You can try it out by navigating to a capsule that requests a
+  certificate, or going directly to the <a href="/login">login</a> page.
+</p>
+<h4>Titan</h4>
+<p>
+  Added support for the <em>titan://</em> protocol 🎉.
+</p>
+<p>
+  The <a href="/gemini/transjovian.org/titan/index">Titan protocol</a> is an add-on for gemini
+  that enables uploading data to gemini servers. Opening a titan URL will now display a form that
+  can be used to compose a <em>text/gemini</em> document or select a file to upload.
+</p>
+<h4>Other Changes</h4>
+<ul>
+  <li>Re-worked error handling and portal error pages to be more clear and consistent.</li>
+  <li>Updated all system libraries including python, openssl, apache, etc.</li>
+  <li>Fixed link lines not being clickable when they only contained an emoji character.</li>
+  <li>Added anchor links to the <a href="/">home</a>, <a href="/about">about</a>, and <a href="/changes">changes</a>
+    pages.
+  </li>
+</ul>
+<h3 id="2026-01-15"><a href="#2026-01-15" class="header-anchor">2026-01-15</a></h3>
+<ul>
+  <li>
+    Removed the gray background when hovering over links in gopher:// (I don't like it anymore).
+  </li>
+</ul>
+<h3 id="2025-11-03"><a href="#2025-11-03" class="header-anchor">2025-11-03</a></h3>
+<ul>
+  <li>
+    Reader mode is now sticky, and will persist when navigating between pages until
+    <b>[exit&nbsp;reader&nbsp;mode]</b>
+    is clicked.
+  </li>
+</ul>
+<h3 id="2025-10-13"><a href="#2025-10-13" class="header-anchor">2025-10-13</a></h3>
+<ul>
+  <li>
+    Added a <a href="/gemini/mozz.us/?reader=1">[reader]</a> link at the top of the page to
+    activate "reader mode" with less visual clutter.
+  </li>
+</ul>
+<h3 id="2025-10-12"><a href="#2025-10-12" class="header-anchor">2025-10-12</a></h3>
+<h4>Scroll</h4>
+<p>
+  Added support for the <a href="/scroll/scrollprotocol.us.to/spec.scroll">scroll://</a> protocol 🎉.
+</p>
+<ul>
+  <li>
+    There's a <a href="/scroll/scrollprotocol.us.to/?meta=1">[meta]</a> link at the top of
+    the page that will make a metadata request for the current document.
+  </li>
+  <li>
+    You can specify your desired response language by adding a <i>?lang=&lt;code&gt;</i> query parameter.
+    <ul>
+      <li>For example, <a href="/scroll/scrollprotocol.us.to/?lang=es">/scroll/scrollprotocol.us.to/?lang=es</a>.</li>
+      <li>(I haven't found any examples in-the-wild to test this with)</li>
+    </ul>
+  </li>
+</ul>
+<h4>Other Changes</h4>
+<ul>
+  <li>Headers in gemini/spartan/scroll responses are now page anchors with clickable links.</li>
+  <li>Added a <a href="/gemini/mozz.us/">[refresh]</a> link at the top the page to reload the current URL.</li>
+  <li>Exposed the <a href="/gopher/gopher.floodgap.com/?vr=1">[GopherVR]</a> link for gopher pages (still
+    experimental).
+  </li>
+  <li>Added tooltip descriptions for the navigation links at the top of the page.</li>
+  <li>Fixed handling of malformed gemini link lines containing only "=>".</li>
+</ul>
+<h3 id="2025-09-07"><a href="#2025-09-07" class="header-anchor">2025-09-07</a></h3>
+<ul>
+  <li>Added support for dark mode if your browser/OS is configured to prefer it.</li>
+</ul>
+<h3 id="2025-08-26"><a href="#2025-08-26" class="header-anchor">2025-08-26</a></h3>
+<ul>
+  <li>Improved the algorithm for detecting links in plaintext responses.</li>
+  <li>Added a shortcut to the fingerverse on the front page.</li>
+  <li>Fixed edge-case handling gopher selectors containing #fragments.</li>
+</ul>
+<h3 id="2025-05-31"><a href="#2025-05-31" class="header-anchor">2025-05-31</a></h3>
+<ul>
+  <li>Disabled the captcha check for proxy requests to raw files with <i>?raw=1</i>.</li>
+  <li>Removed the <i>X-Frame-Options</i> header to allow the site to be embedded.</li>
+  <li>Added help sections on RSS feeds and proxy links.</li>
+</ul>
+<h3 id="2025-03-24"><a href="#2025-03-24" class="header-anchor">2025-03-24</a></h3>
+<ul>
+  <li>Reduced a possible tracking vector with the new captcha cookie.</li>
+  <li>Made a long-overdue update to the <a href="/about">about</a> page.</li>
+</ul>
+<h3 id="2025-03-22"><a href="#2025-03-22" class="header-anchor">2025-03-22</a></h3>
+<ul>
+  <li>Added a captcha to further protect against web crawlers.</li>
+</ul>
+<h3 id="2025-01-29"><a href="#2025-01-29" class="header-anchor">2025-01-29</a></h3>
+<p>
+  Note: I'm aware that recent activity from web crawlers has been spamming some gemini/gopher
+  servers with a large amount of traffic from this web proxy. Sorry about that! If it's causing
+  issues for you, you can block this server's IP address and/or reach out to me over email at
+  <a href="mailto:michael@mozz.us">michael@mozz.us</a> with details, and I'll work on mitigation. </p>
+<ul>
+  <li>Added a hidden bot-prevention link to the bottom of the page.</li>
+</ul>
+<h3 id="2023-11-13"><a href="#2023-11-13" class="header-anchor">2023-11-13</a></h3>
+<ul>
+  <li>Moved the response details from the top of the page to the bottom of the page.</li>
+  <li>Updated styling for input boxes and iframe previews.</li>
+  <li>Fixed consecutive slashes being erroneously compressed in gopher queries.</li>
+  <li>Fixed handling of gopher menus items with empty <i>port</i> components.</li>
+</ul>
+<h3 id="2023-10-08"><a href="#2023-10-08" class="header-anchor">2023-10-08</a></h3>
+<ul>
+  <li>Fixed username/password components from being stripped from links,
+    for example in <i>mailto://</i> URLs.
+  </li>
+</ul>
+<h3 id="2023-08-13"><a href="#2023-08-13" class="header-anchor">2023-08-13</a></h3>
+<ul>
+  <li>Gopher menus now use icons for item types.
+    The icons were borrowed from <a href="https://www.apache.org/icons/">apache's httpd</a>
+    and are licensed under public domain.
+  </li>
+  <li>Fixed missing line breaks in <i>text/gemini</i> pages when using Lynx (if you use Lynx, you should
+    also set <i>COLLAPSE_BR_TAGS:FALSE</i> in your browser config to preserve blank lines).
+  </li>
+  <li>Fiddling around with the site style.</li>
+</ul>
+<h3 id="2023-08-09"><a href="#2023-08-09" class="header-anchor">2023-08-09</a></h3>
+<ul>
+  <li>Text responses that are not valid UTF-8 will now use the <a
+    href="https://github.com/chardet/chardet">chardet</a>
+    library to attempt to guess the correct character encoding. The desired file encoding can also be indicated by
+    appending <i>?charset=...</i> to the end of the URL.
+  </li>
+  <li>The following response types will now be displayed inside of an iframe preview window:
+    <ul>
+      <li><i>text/html</i></li>
+      <li><i>text/xml</i></li>
+      <li><i>application/pdf</i></li>
+      <li><i>application/json</i></li>
+    </ul>
+  </li>
+  <li>Bumped max line width from <i>80ch</i> to <i>100ch</i>.</li>
+</ul>
+<h3 id="2023-08-04"><a href="#2023-08-04" class="header-anchor">2023-08-04</a></h3>
+<ul>
+  <li>Unhandled file types under 1 MB are now displayed as <i>data://</i> links instead of being opened directly.</li>
+</ul>
+<h3 id="2023-08-03"><a href="#2023-08-03" class="header-anchor">2023-08-03</a></h3>
+<h4>Gopher+</h4>
+<p>This update adds initial support for the <a href="https://github.com/gopher-protocol/gopher-plus">Gopher+
+  protocol</a>! 🎉</p>
+<ul>
+  <li>Gopher+ URLs are now fully supported, per <a href="https://datatracker.ietf.org/doc/html/rfc4266">RFC 4266</a>.
+  </li>
+  <li>Gopher menus will include an [i] icon next to Gopher+ capable links.</li>
+  <li>There's a new [gopher+ info] shortcut below the URL bar.</li>
+  <li>Gopher+ attributes will be rendered using as <em>application/gopher+-attribute</em>.</li>
+  <li>ASK blocks are not supported yet.</li>
+</ul>
+<p>Here are some example URLs to try it out:</p>
+<ul>
+  <li><a href="/gopher/gopher.quux.org/1%2509%2509+">gopher://gopher.quux.org/1%09%09+</a> <i>(gopher+ menu)</i></li>
+  <li><a href="/gopher/gopher.quux.org/1%2509%2509!">gopher://gopher.quux.org/1%09%09!</a> <i>(gopher+ attributes,
+    single item)</i></li>
+  <li><a href="/gopher/gopher.quux.org/1%2509%2509$">gopher://gopher.quux.org/1%09%09$</a> <i>(gopher+ attributes,
+    directory)</i></li>
+</ul>
+<h4>Other Changes</h4>
+<ul>
+  <li>The HTML title and favicon are now set dynamically based on the proxied response.</li>
+  <li>The Response Details table is new minimized by default to reduce visual clutter.</li>
+  <li><i>gopher://</i> URLs will now have their path component percent-encoded. Although
+    this is not required by the RFC, I have found that gopher URLs that contain special
+    characters such as spaces will confuse most URL-parsing libraries.
+  </li>
+  <li>Ports 77 and 8070 are now whitelisted for proxy requests.</li>
+  <li>Fixed emoji detection to work with multi-codepoint sequences.</li>
+  <li>Fixed empty gopher info lines being collapsed.</li>
+</ul>
+<h3 id="2023-07-17"><a href="#2023-07-17" class="header-anchor">2023-07-17</a></h3>
+<ul>
+  <li>Fixed a bug causing large responses to be truncated.</li>
+</ul>
+<h3 id="2023-07-12"><a href="#2023-07-12" class="header-anchor">2023-07-12</a></h3>
+<ul>
+  <li>Renamed the project from "Gemini Portal" to "SmolNet Portal", and revamped the homepage.</li>
+  <li>Added protocol support for <i>gopher://</i> and <i>gophers://</i> (finally!).</li>
+  <li>Added protocol support for the brand new <i>nex://</i> protocol.</li>
+  <li>The proxy response will now automatically switch to streaming mode for files over 1 MB.</li>
+  <li>Removed the [inline images] feature, I have plans to expand on this idea in the future.</li>
+  <li>Added (external indicators) next to links in gemini documents.</li>
+  <li>Added support for the unofficial `---` (horizontal rule) gemini line type.</li>
+  <li>Improved error pages, and various other minor tweaks.</li>
+</ul>
+<h3 id="2023-05-17"><a href="#2023-05-17" class="header-anchor">2023-05-17</a></h3>
+<ul>
+  <li>Link lines that start with an emoji character will no longer underline the emoji.</li>
+</ul>
+<h3 id="2023-03-16"><a href="#2023-03-16" class="header-anchor">2023-03-16</a></h3>
+<ul>
+  <li>Fixed intermittent 500 errors (hopefully 🤞).</li>
+  <li>Fixed clicking to enlarge images.</li>
+</ul>
+<h3 id="2023-02-22"><a href="#2023-02-22" class="header-anchor">2023-02-22</a></h3>
+<ul>
+  <li>Fixed the construction of relative URLs using the <i>finger://</i> scheme.</li>
+</ul>
+<h3 id="2023-01-18"><a href="#2023-01-18" class="header-anchor">2023-01-18</a></h3>
+<p>
+  This release marks a major milestone and rewrite of the proxy server,
+  geared towards improving performance on my poor VPC instance. Please
+  let me know if you encounter any broken links or pages that were
+  previously working, and I'll do my best to fix them. </p>
+<ul>
+  <li>The proxy codebase is now hosted publicly at <a href="https://github.com/michael-lazar/smolnet-portal">https://github.com/michael-lazar/smolnet-portal</a>
+  </li>
+  <li>The server now has an actual <a href="/">homepage</a>.</li>
+  <li>Added proxy support for the <a href="/finger/mozz.us/michael"><i>finger://</i></a> protocol.</li>
+  <li>Added click-to-zoom for images via optional javascript.</li>
+  <li>The server is now enforcing a 10s connect timeout for proxied hosts.</li>
+  <li>Added link detection in <em>text/plain</em> responses via regular expressions.</li>
+  <li>Revamped URL parsing and normalization engine for all protocols.</li>
+  <li>Added graceful handling for pages with invalid character encodings.</li>
+  <li>Large responses (bigger than 8MB) are now handled more efficiently.</li>
+  <li>Removed support for the legacy <em>?reflow=</em> query parameters.</li>
+</ul>
+<h3 id="2021-08-01"><a href="#2021-08-01" class="header-anchor">2021-08-01</a></h3>
+<ul>
+  <li>This proxy is now available over port 80! <a href="http://portal.mozz.us">http://portal.mozz.us</a>
+  </li>
+  <li>Removed the &lt;a&gt; tags from headers, because they render poorly in some browsers.
+</ul>
+<h3 id="2021-07-03"><a href="#2021-07-03" class="header-anchor">2021-07-03</a></h3>
+<ul>
+  <li>
+    URL fragments on gemini URLs will now anchor to page headers in text/gemini documents.
+    See the <a href="https://gitlab.com/gemini-specification/gemini-text/-/issues/3#note_519439831">protocol
+    discussion thread</a> for more details.
+  </li>
+</ul>
+<h3 id="2021-04-18"><a href="#2021-04-18" class="header-anchor">2021-04-18</a></h3>
+<ul>
+  <li>Added proxy support for the <a href="/text/txt.textprotocol.org/">text://</a> protocol.</li>
+</ul>
+<h3 id="2021-04-17"><a href="#2021-04-17" class="header-anchor">2021-04-17</a></h3>
+<ul>
+  <li>Updated networking to support IPv6 gemini servers.</li>
+  <li>Updated OpenSSL library - TLS 1.3 and Ed25519 keys are now supported.</li>
+</ul>
+<h3 id="2021-03-24"><a href="#2021-03-24" class="header-anchor">2021-03-24</a></h3>
+<ul>
+  <li>Disabled autocomplete & spell checking on the URL input bar.</li>
+  <li>Added proxy support for the spartan:// protocol.</li>
+</ul>
+<h3 id="2021-03-05"><a href="#2021-03-05" class="header-anchor">2021-03-05</a></h3>
+<ul>
+  <li>Added "blocking access" section to the <a href="/about">about</a> page.</li>
+</ul>
+<h3 id="2021-02-07"><a href="#2021-02-07" class="header-anchor">2021-02-07</a></h3>
+<ul>
+  <li>Prevent automatic redirects from <em>gemini://example.com</em> to <em>gemini://example.com/</em>.</li>
+</ul>
+<h3 id="2021-02-07-1"><a href="#2021-02-07-1" class="header-anchor">2021-02-07</a></h3>
+<ul>
+  <li>Better error handling if a link line contains an invalid URL.</li>
+</ul>
+<h3 id="2021-02-06"><a href="#2021-02-06" class="header-anchor">2021-02-06</a></h3>
+<ul>
+  <li>Emoji favicons will now be rendered as the <em>actual</em> site favicon thanks to a neat svg hack.</li>
+</ul>
+<h3 id="2021-01-05"><a href="#2021-01-05" class="header-anchor">2021-01-05</a></h3>
+<ul>
+  <li>Dropped the css <em>max-width</em> from 120ch to 100ch.</li>
+</ul>
+<h3 id="2020-12-28"><a href="#2020-12-28" class="header-anchor">2020-12-28</a></h3>
+<ul>
+  <li>Added a new <a href="/gemini/mozz.us/?inline=1">[inline images]</a> button to toggle viewing images in <em>text/gemini</em>
+    documents.
+  </li>
+  <li>Gemini capsule robots.txt files are no longer checked, since nobody seems to care about this in the context of a
+    web proxy...
+  </li>
+</ul>
+<h3 id="2020-12-15"><a href="#2020-12-15" class="header-anchor">2020-12-15</a></h3>
+<ul>
+  <li>Added support for <em>;rаbbiΤ;</em> formatting flags.
+    <pre>
           /|
     /\   //
    |/\'-'/ .::.
@@ -319,20 +322,20 @@
   __\  _  /__
  '----' '----'
     </pre>
-    </li>
-  </ul>
-  <h3>2020-11-27</h3>
-  <ul>
-    <li>Fixed Apache behavior that was causing repeated slashes to be normalized inside of gemini URLs.</li>
-  </ul>
-  <h3>2020-11-10</h3>
-  <ul>
-    <li>Added more TLS connection information to the <a href="/gemini/mozz.us/?crt=1">[view cert]</a> page.</li>
-  </ul>
-  <h3>2020-10-11</h3>
-  <ul>
-    <li>Added a site header with links to the new <a href="/changes">changes</a> & <a href="/about">about</a> sections.
-    </li>
-    <li>Gemini capsule robots.txt files are now checked and respected by this proxy.</li>
-  </ul>
+  </li>
+</ul>
+<h3 id="2020-11-27"><a href="#2020-11-27" class="header-anchor">2020-11-27</a></h3>
+<ul>
+  <li>Fixed Apache behavior that was causing repeated slashes to be normalized inside of gemini URLs.</li>
+</ul>
+<h3 id="2020-11-10"><a href="#2020-11-10" class="header-anchor">2020-11-10</a></h3>
+<ul>
+  <li>Added more TLS connection information to the <a href="/gemini/mozz.us/?crt=1">[view cert]</a> page.</li>
+</ul>
+<h3 id="2020-10-11"><a href="#2020-10-11" class="header-anchor">2020-10-11</a></h3>
+<ul>
+  <li>Added a site header with links to the new <a href="/changes">changes</a> & <a href="/about">about</a> sections.
+  </li>
+  <li>Gemini capsule robots.txt files are now checked and respected by this proxy.</li>
+</ul>
 {% endblock %}

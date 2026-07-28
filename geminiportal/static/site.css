@@ -304,13 +304,13 @@ details summary {
     font-size: 1.1em;
 }
 
-.gemini .header-anchor {
+.header-anchor {
     color: inherit;
     text-decoration: none;
     cursor: pointer;
 }
 
-.gemini .header-anchor:hover {
+.header-anchor:hover {
     text-decoration: underline;
 }
 
