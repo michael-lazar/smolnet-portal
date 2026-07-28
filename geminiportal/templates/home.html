@@ -1,78 +1,77 @@
 {% extends "base.html" %}
 
 {% block body %}
-  <h2>Welcome, voyager!</h2>
-  <p>This website is a free, public service for exploring alternate internet protocols.</p>
-  <p>To get started, type a URL into the address bar, or click on a link below.</p>
+<h2>Welcome, voyager!</h2>
+<p>This website is a free, public service for exploring alternate internet protocols.</p>
+<p>To get started, type a URL into the address bar, or click on a link below.</p>
 
-  {% include "url-bar.html" %}
+{% include "url-bar.html" %}
 
-  <div class="protocol-grid">
-    <div>
-      <h3 id="gemini"><a href="#gemini" class="header-anchor"><i>gemini://</i></a></h3>
-      <ul>
-        <li><a href="/gemini/geminiprotocol.net">Gemini Project Homepage</a></li>
-        <li><a href="/gemini/kennedy.gemi.dev">Kennedy Search Engine</a></li>
-        <li><a href="/gemini/warmedal.se/~antenna">Antenna Feed Aggregator</a></li>
-        <li><a href="/gemini/station.martinrue.com">Station - Where Capsuleers Hang Out</a></li>
-        <li><a href="/gemini/bbs.geminispace.org">Geminispace BBS</a></li>
-      </ul>
-    </div>
-
-    <div>
-      <h3 id="gopher"><a href="#gopher" class="header-anchor"><i>gopher://</i></a></h3>
-      <ul>
-        <li><a href="/gopher/gopher.floodgap.com/">Floodgap Systems</a></li>
-        <li><a href="/gopher/gopher.quux.org/">quux.org</a></li>
-        <li><a href="/gopher/i-logout.cz/1/bongusta">Bongusta!</a></li>
-        <li><a href="/gopher/magical.fish">Magical Fish</a></li>
-        <li><a href="/gopher/bitreich.org/">Bitreich.org</a></li>
-      </ul>
-    </div>
-
-    <div>
-      <h3 id="finger"><a href="#finger" class="header-anchor"><i>finger://</i></a></h3>
-      <ul>
-        <li><a href="/finger/happynetbox.com/fingerverse">The Fingerverse</a></li>
-        <li><a href="/finger/plan.cat">plan.cat</a></li>
-        <li><a href="/finger/thebackupbox.net/ring">Finger Ring</a></li>
-      </ul>
-    </div>
-
-    <div>
-      <h3 id="spartan"><a href="#spartan" class="header-anchor"><i>spartan://</i></a></h3>
-      <ul>
-        <li><a href="/spartan/mozz.us/">Spartan Protocol Homepage</a></li>
-      </ul>
-    </div>
-
-    <div>
-      <h3 id="text"><a href="#text" class="header-anchor"><i>text://</i></a></h3>
-      <ul>
-        <li><a href="/text/txt.textprotocol.org/">TEXT://PROTOCOL Homepage</a></li>
-      </ul>
-    </div>
-
-    <div>
-      <h3 id="nex"><a href="#nex" class="header-anchor"><i>nex://</i></a></h3>
-      <ul>
-        <li><a href="/nex/nightfall.city/">Nightfall Express Homepage</a></li>
-        <li><a href="/nex/mozz.us/bookmarks/">nex:// server bookmarks</a></li>
-      </ul>
-    </div>
-
-    <div>
-      <h3 id="scroll"><a href="#scroll" class="header-anchor"><i>scroll://</i></a></h3>
-      <ul>
-        <li><a href="/scroll/scrollprotocol.us.to/">Scroll Protocol Homepage</a></li>
-      </ul>
-    </div>
-
+<div class="protocol-grid">
+  <div>
+    <h3 id="gemini"><a href="#gemini" class="header-anchor"><i>gemini://</i></a></h3>
+    <ul>
+      <li><a href="/gemini/geminiprotocol.net">Gemini Project Homepage</a></li>
+      <li><a href="/gemini/kennedy.gemi.dev">Kennedy Search Engine</a></li>
+      <li><a href="/gemini/station.martinrue.com">Station - Where Capsuleers Hang Out</a></li>
+      <li><a href="/gemini/bbs.geminispace.org">Geminispace BBS</a></li>
+    </ul>
   </div>
-  <figure class="pillars">
-    <a href="https://en.wikipedia.org/wiki/Pillars_of_Creation">
-      <img src="/static/pillars.jpg" alt="Pillars of Creation">
-    </a>
-    <figcaption><i>Pillars of Creation, 1995</i></figcaption>
-  </figure>
+
+  <div>
+    <h3 id="gopher"><a href="#gopher" class="header-anchor"><i>gopher://</i></a></h3>
+    <ul>
+      <li><a href="/gopher/gopher.floodgap.com/">Floodgap Systems</a></li>
+      <li><a href="/gopher/gopher.quux.org/">quux.org</a></li>
+      <li><a href="/gopher/i-logout.cz/1/bongusta">Bongusta!</a></li>
+      <li><a href="/gopher/magical.fish">Magical Fish</a></li>
+      <li><a href="/gopher/bitreich.org/">Bitreich.org</a></li>
+    </ul>
+  </div>
+
+  <div>
+    <h3 id="finger"><a href="#finger" class="header-anchor"><i>finger://</i></a></h3>
+    <ul>
+      <li><a href="/finger/happynetbox.com/fingerverse">The Fingerverse</a></li>
+      <li><a href="/finger/plan.cat">plan.cat</a></li>
+      <li><a href="/finger/thebackupbox.net/ring">Finger Ring</a></li>
+    </ul>
+  </div>
+
+  <div>
+    <h3 id="spartan"><a href="#spartan" class="header-anchor"><i>spartan://</i></a></h3>
+    <ul>
+      <li><a href="/spartan/mozz.us/">Spartan Protocol Homepage</a></li>
+    </ul>
+  </div>
+
+  <div>
+    <h3 id="text"><a href="#text" class="header-anchor"><i>text://</i></a></h3>
+    <ul>
+      <li><a href="/text/txt.textprotocol.org/">TEXT://PROTOCOL Homepage</a></li>
+    </ul>
+  </div>
+
+  <div>
+    <h3 id="nex"><a href="#nex" class="header-anchor"><i>nex://</i></a></h3>
+    <ul>
+      <li><a href="/nex/nightfall.city/">Nightfall Express Homepage</a></li>
+      <li><a href="/nex/mozz.us/bookmarks/">nex:// server bookmarks</a></li>
+    </ul>
+  </div>
+
+  <div>
+    <h3 id="scroll"><a href="#scroll" class="header-anchor"><i>scroll://</i></a></h3>
+    <ul>
+      <li><a href="/scroll/scrollprotocol.us.to/">Scroll Protocol Homepage</a></li>
+    </ul>
+  </div>
+
+</div>
+<figure class="pillars">
+  <a href="https://en.wikipedia.org/wiki/Pillars_of_Creation">
+    <img src="/static/pillars.jpg" alt="Pillars of Creation">
+  </a>
+  <figcaption><i>Pillars of Creation, 1995</i></figcaption>
+</figure>
 {% endblock %}
