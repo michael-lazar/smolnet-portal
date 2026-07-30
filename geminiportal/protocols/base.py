@@ -14,6 +14,7 @@ from geminiportal.errors import (
     InvalidRequestError,
     RequestBlockedError,
     UpstreamConnectionError,
+    UpstreamResponseError,
     UpstreamTimeoutError,
 )
 from geminiportal.handlers import get_handler_class
@@ -128,7 +129,11 @@ class BaseRequest:
     def parse_response_header(raw_header: bytes) -> tuple[str, str]:
         header = raw_header.decode()
         parts = header.strip().split(maxsplit=1)
-        if len(parts) == 1:
+        if not parts:
+            raise UpstreamResponseError(
+                "The server closed the connection without returning a response header."
+            )
+        elif len(parts) == 1:
             status, meta = parts[0], ""
         else:
             status, meta = parts

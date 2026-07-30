@@ -1,6 +1,6 @@
 import pytest
 
-from geminiportal.errors import RequestBlockedError
+from geminiportal.errors import RequestBlockedError, UpstreamResponseError
 from geminiportal.protocols import (
     FingerRequest,
     GeminiRequest,
@@ -11,6 +11,7 @@ from geminiportal.protocols import (
     TxtRequest,
     build_proxy_request,
 )
+from geminiportal.protocols.base import BaseRequest
 from geminiportal.urls import URLReference
 from geminiportal.utils import ProxyOptions
 
@@ -164,3 +165,25 @@ async def test_scroll_request_meta():
     request = build_proxy_request(url, options=ProxyOptions(meta=True))
     response = await request.get_response()
     assert await response.get_body()
+
+
+def test_parse_response_header():
+    status, meta = BaseRequest.parse_response_header(b"20 text/gemini\r\n")
+    assert status == "20"
+    assert meta == "text/gemini"
+
+
+def test_parse_response_header_no_meta():
+    status, meta = BaseRequest.parse_response_header(b"20\r\n")
+    assert status == "20"
+    assert meta == ""
+
+
+def test_parse_response_header_empty():
+    with pytest.raises(UpstreamResponseError):
+        BaseRequest.parse_response_header(b"")
+
+
+def test_parse_response_header_blank_line():
+    with pytest.raises(UpstreamResponseError):
+        BaseRequest.parse_response_header(b"\r\n")
