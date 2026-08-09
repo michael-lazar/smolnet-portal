@@ -1,0 +1,22 @@
+{% macro link_line(item) -%}
+{{ item.prefix }}<a href="{{ item.url }}">{{ item.text }}</a>
+{%- if item.media_type %}
+ <a href="{{ item.url }}"
+    class="media-toggle"
+    onclick="return toggleMedia(this)"
+    data-media-url="{{ item.media_url }}"
+    title="Embed this {{ item.media_type }} in the page">[embed]</a>
+{%- endif %}
+{%- if item.external_indicator %} <span>({{ item.external_indicator }})</span>{% endif %}<br/>
+{%- if item.media_type %}
+<div class="media-embed" hidden>
+  {% if item.media_type == "image" %}
+  <img class="inline-image" alt="{{ item.text }}" onclick="this.classList.toggle('selected')">
+  {% elif item.media_type == "audio" %}
+  <audio controls></audio>
+  {% else %}
+  <video controls preload="metadata"></video>
+  {% endif %}
+</div>
+{%- endif %}
+{%- endmacro %}

@@ -131,12 +131,15 @@ class ScrollHandler(TemplateHandler):
                 else:
                     # Treat it as a normal link
                     yield from self.flush()
+                    media_type, media_url = url.get_inline_media()
                     yield {
                         "item_type": "link",
                         "url": url.get_proxy_url(),
                         "text": link_text,
                         "prefix": prefix,
                         "external_indicator": url.get_external_indicator(),
+                        "media_type": media_type,
+                        "media_url": media_url,
                     }
 
             elif line.startswith("=:"):

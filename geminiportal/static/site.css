@@ -232,6 +232,25 @@ details summary {
     cursor: zoom-out;
 }
 
+.media-toggle {
+    text-decoration: none;
+    font-size: smaller;
+}
+
+.gemini > .media-embed {
+    margin: 5px 0;
+}
+
+.media-embed audio,
+.media-embed video {
+    display: block;
+    max-width: 100%;
+}
+
+.media-embed video {
+    max-height: 85vh;
+}
+
 .inline-save {
     margin-bottom: 1em;
 }

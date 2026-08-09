@@ -1,7 +1,12 @@
 {% extends "proxy/base.html" %}
+{% from "proxy/macros.html" import link_line %}
 
 {% block title %}
   {% if title %}{{ title }}{% else %}{{ super() }}{% endif %}
+{% endblock %}
+
+{% block extrahead %}
+  <script src="/static/media-embed.js" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -18,7 +23,7 @@
     {% elif item.item_type == "h5" -%}
         <h5>{{ item.text }}</h5>
     {% elif item.item_type == "link" -%}
-        {{ item.prefix }}<a href="{{ item.url }}">{{ item.text }}</a>{% if item.external_indicator %} <span>({{ item.external_indicator }})</span>{% endif %}<br/>
+        {{ link_line(item) }}
     {% elif item.item_type == "pre" -%}
         <pre>{{ "\n".join(item.lines) }}</pre>
     {% elif item.item_type == "blockquote" -%}

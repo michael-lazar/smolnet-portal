@@ -169,6 +169,23 @@ class URLReference:
 
         return mimetypes.guess_type(self.path, strict=False)[0]
 
+    def get_inline_media(self) -> tuple[str | None, str | None]:
+        """
+        If the URL looks like it points to embeddable media, return the type
+        of media ("image", "audio", "video") and the raw proxy URL that can
+        be used as the source for an HTML media tag.
+        """
+        if self.scheme not in PROXY_SCHEMES:
+            return None, None
+
+        mimetype = self.guess_mimetype()
+        if mimetype:
+            media_type = mimetype.split("/", 1)[0]
+            if media_type in ("image", "audio", "video"):
+                return media_type, self.get_proxy_url(raw=1)
+
+        return None, None
+
     def get_external_indicator(self) -> str | None:
         """
         Return a string that can be displayed next to external links to

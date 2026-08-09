@@ -92,12 +92,15 @@ class GeminiHandler(TemplateHandler):
             elif line.startswith("=>"):
                 yield from self.flush()
                 url, link_text, prefix = parse_link_line(line[2:], self.url)
+                media_type, media_url = url.get_inline_media()
                 yield {
                     "item_type": "link",
                     "url": url.get_proxy_url(),
                     "text": link_text,
                     "prefix": prefix,
                     "external_indicator": url.get_external_indicator(),
+                    "media_type": media_type,
+                    "media_url": media_url,
                 }
 
             elif line.startswith("=:"):
