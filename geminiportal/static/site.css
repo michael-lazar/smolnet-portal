@@ -53,10 +53,6 @@ div {
     margin-bottom: 0.6em;
 }
 
-img {
-    max-width: 300px;
-}
-
 details {
     margin-top: 1em;
 }
@@ -220,13 +216,19 @@ details summary {
     margin: 0;
 }
 
+.pillars img {
+    max-width: 300px;
+}
+
 .inline-image {
+    max-width: 100%;
+    max-height: 85vh;
     cursor: zoom-in;
 }
 
 .inline-image.selected {
     max-width: 90vw;
-    max-height: initial;
+    max-height: none;
     cursor: zoom-out;
 }
 
