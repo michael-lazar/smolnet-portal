@@ -217,7 +217,7 @@ class URLReference:
         if not self.hostname:
             return ""
 
-        netloc = self.hostname
+        netloc = format_netloc(self.hostname)
 
         if self.username:
             if self.password:
@@ -512,6 +512,13 @@ class URLReference:
         url = f"file://{quote(filename)}"
         return cls(url)
 
+    @classmethod
+    def from_origin(cls, scheme: str, hostname: str, port: int | None = None):
+        """
+        Generate a URL from its origin components.
+        """
+        return cls(f"{scheme}://{format_netloc(hostname, port)}")
+
     def get_dir(self) -> URLReference:
         """
         If the URL path is not a directory, go up one level to the nearest directory.
@@ -651,6 +658,21 @@ class URLReference:
 
     def get_filename(self) -> str:
         return os.path.basename(self.path.strip("/"))
+
+
+def format_netloc(hostname: str, port: int | None = None) -> str:
+    """
+    Build a netloc component from a hostname and an optional port.
+
+    urlparse() strips the enclosing brackets from IPv6 addresses when
+    parsing the hostname, so they need to be restored before the hostname
+    can be embedded in a URL again.
+    """
+    if ":" in hostname:
+        hostname = f"[{hostname}]"
+    if port is None:
+        return hostname
+    return f"{hostname}:{port}"
 
 
 def quote_gopher(selector: str) -> str:

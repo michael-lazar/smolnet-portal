@@ -295,7 +295,7 @@ async def logout() -> HTTPResponse:
 async def profile() -> HTTPResponse:
     activations = []
     for activation in await auth.list_activations(g.session):
-        url = URLReference(f"{activation.scheme}://{activation.hostname}:{activation.port}")
+        url = URLReference.from_origin(activation.scheme, activation.hostname, activation.port)
         activations.append(
             {
                 "display": url.get_url(),
@@ -355,7 +355,7 @@ async def update_cert_activation(activate: bool) -> HTTPResponse:
 
     next_url = request.args.get("next")
     if not next_url:
-        url = URLReference(f"{origin.scheme}://{origin.hostname}:{origin.port}")
+        url = URLReference.from_origin(origin.scheme, origin.hostname, origin.port)
         next_url = url.get_proxy_url(external=False)
 
     return app.redirect(clean_next_url(next_url), 303)

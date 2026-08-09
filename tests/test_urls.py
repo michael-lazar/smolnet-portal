@@ -1,3 +1,5 @@
+import pytest
+
 from geminiportal.urls import URLReference
 
 
@@ -172,6 +174,37 @@ def test_deconstruct_unknown_scheme():
     assert url.get_url() == "mailto:michael@mozz.us"
 
 
+def test_deconstruct_gemini_ipv6():
+    url = URLReference("gemini://[fe80:beef::2]:1966/hello.gmi")
+    assert url.scheme == "gemini"
+    assert url.port == 1966
+    assert url.hostname == "fe80:beef::2"
+    assert url.netloc == "[fe80:beef::2]:1966"
+    assert url.get_url() == "gemini://[fe80:beef::2]:1966/hello.gmi"
+    assert url.get_gemini_request() == b"gemini://[fe80:beef::2]:1966/hello.gmi\r\n"
+
+
+def test_deconstruct_gemini_ipv6_missing_brackets():
+    with pytest.raises(ValueError, match="Port could not be cast to integer value"):
+        URLReference("gemini://fe80:beef::2/hello.gmi")
+
+
+def test_get_root_url_ipv6():
+    url = URLReference("gemini://[fe80:beef::2]/hello.gmi")
+    assert url.get_root().get_url() == "gemini://[fe80:beef::2]"
+
+
+def test_from_origin():
+    url = URLReference.from_origin("gemini", "mozz.us", 1966)
+    assert url.get_url() == "gemini://mozz.us:1966"
+
+
+def test_from_origin_ipv6():
+    url = URLReference.from_origin("gemini", "fe80:beef::2", 1965)
+    assert url.hostname == "fe80:beef::2"
+    assert url.get_url() == "gemini://[fe80:beef::2]"
+
+
 def test_url_join():
     url = URLReference("gemini://mozz.us/").join("/hello")
     assert url.get_url() == "gemini://mozz.us/hello"
@@ -330,6 +363,12 @@ async def test_get_proxy_gemini_link_different_scheme(app):
     async with app.app_context():
         url = base.join("spartan://mozz.us/")
         assert url.get_proxy_url() == "http://portal.mozz.us/spartan/mozz.us/"
+
+
+async def test_get_proxy_gemini_link_ipv6(app):
+    url = URLReference("gemini://[fe80:beef::2]/hello.gmi")
+    async with app.app_context():
+        assert url.get_proxy_url() == "http://portal.mozz.us/gemini/%5Bfe80:beef::2%5D/hello.gmi"
 
 
 async def test_get_proxy_unknown_scheme(app):
