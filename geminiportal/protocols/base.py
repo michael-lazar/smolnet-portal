@@ -37,6 +37,8 @@ BLOCKED_HOSTS = [
     "vger.cloud",
     "warpengineer.space",
     "michaelnordmeyer.com",
+    "konstantelias.nya.je",
+    "athanasia.gemcities.com",
 ]
 
 # Ports that the proxied servers can be hosted on
